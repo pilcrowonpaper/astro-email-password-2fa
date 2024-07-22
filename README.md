@@ -1,6 +1,6 @@
 # Email and password example with 2FA
 
-Built with Astro and Lucia v4 [RFC](https://github.com/lucia-auth/lucia/issues/1639).
+Built with Astro, SQLite, and Lucia v4 [RFC](https://github.com/lucia-auth/lucia/issues/1639).
 
 - Password check with HaveIBeenPwned
 - Email verification
