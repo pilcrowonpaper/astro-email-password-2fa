@@ -13,17 +13,10 @@ import { ConstantRefillTokenBucket } from "@lib/rate-limit";
 import type { APIContext } from "astro";
 import type { SessionFlags } from "@lib/session";
 
-const bucket = new ConstantRefillTokenBucket(10, 10);
+const bucket = new ConstantRefillTokenBucket(10, 5);
 
 export async function POST(context: APIContext): Promise<Response> {
-	if (import.meta.env.PROD) {
-		const clientIP = context.request.headers.get("X-Forwarded-For");
-		if (clientIP === null || !bucket.check(clientIP, 1)) {
-			return new Response("Too many requests", {
-				status: 429
-			});
-		}
-	}
+	const clientIP = context.request.headers.get("X-Forwarded-For");
 	const data: unknown = await context.request.json();
 	const parser = new ObjectParser(data);
 	let email: string, username: string, password: string;
@@ -61,6 +54,13 @@ export async function POST(context: APIContext): Promise<Response> {
 		return new Response("Invalid password", {
 			status: 400
 		});
+	}
+	if (clientIP !== null) {
+		if (!bucket.check(clientIP, 1)) {
+			return new Response("Too many requests", {
+				status: 429
+			});
+		}
 	}
 	const strongPassword = await verifyPasswordStrength(password);
 	if (!strongPassword) {

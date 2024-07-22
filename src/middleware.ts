@@ -5,11 +5,13 @@ import { ConstantRefillTokenBucket } from "./lib/rate-limit";
 const bucket = new ConstantRefillTokenBucket(100, 1);
 
 export const onRequest = defineMiddleware(async (context, next) => {
-	if (import.meta.env.PROD) {
-		const clientIP = context.request.headers.get("X-Forwarded-For");
-		let cost = 2;
+	const clientIP = context.request.headers.get("X-Forwarded-For");
+	if (clientIP !== null) {
+		let cost: number;
 		if (context.request.method === "GET" || context.request.method === "OPTIONS") {
 			cost = 1;
+		} else {
+			cost = 2;
 		}
 		if (clientIP === null || !bucket.check(clientIP, cost)) {
 			return new Response("Too many requests", {
