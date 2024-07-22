@@ -19,6 +19,12 @@ Create `sqlite.db` and run `setup.sql`.
 sqlite3 sqlite.db
 ```
 
+Run the application:
+
+```
+pnpm dev
+```
+
 ## User enumeration
 
 I do not consider user enumeration to be a real vulnerability so please don't open issues on it. If you really need to prevent it, just don't use emails.
