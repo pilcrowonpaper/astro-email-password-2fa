@@ -1,0 +1,95 @@
+---
+import {
+	getUserEmailVerificationRequest,
+	createEmailVerificationRequest,
+	sendVerificationEmail,
+	sendVerificationEmailBucket
+} from "@lib/email";
+import { verifyExpirationDate } from "@lib/utils";
+
+if (Astro.locals.user === null) {
+	return Astro.redirect("/login");
+}
+let verificationRequest = getUserEmailVerificationRequest(Astro.locals.user.id);
+if (verificationRequest === null && Astro.locals.user.emailVerified) {
+	return Astro.redirect("/");
+}
+if (verificationRequest === null) {
+	if (!sendVerificationEmailBucket.check(Astro.locals.user.id, 1)) {
+		return new Response(null, {
+			status: 429
+		});
+	}
+	// just in case the verification code is deleted
+	verificationRequest = createEmailVerificationRequest(Astro.locals.user.id, Astro.locals.user.email);
+	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
+} else if (!verifyExpirationDate(verificationRequest.expiresAt)) {
+	if (!sendVerificationEmailBucket.check(Astro.locals.user.id, 1)) {
+		return new Response(null, {
+			status: 429
+		});
+	}
+	verificationRequest = createEmailVerificationRequest(verificationRequest.userId, verificationRequest.email);
+	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
+}
+---
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Verify your email address</title>
+	</head>
+	<body>
+		<main>
+			<h1>Verify your email address</h1>
+			<p>We sent an 8-digit code to {verificationRequest.email}.</p>
+			<form id="form-verify">
+				<label for="form-verify.code">Code</label>
+				<input id="form-verify.code" name="code" />
+				<button>Verify</button>
+				<p id="form-verify.message"></p>
+			</form>
+			<button id="button-resend">Resend code</button>
+			<p id="resend-message"></p>
+			<a href="/settings">Change your email</a>
+		</main>
+	</body>
+</html>
+
+<script>
+	const formElement = document.getElementById("form-verify")!;
+	const formErrorElement = document.getElementById("form-verify.message")!;
+	const resendButtonElement = document.getElementById("button-resend")!;
+	const resendMessageElement = document.getElementById("resend-message")!;
+
+	formElement.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const data = {
+			code: formData.get("code")
+		};
+		const response = await fetch("/api/email-verification/verify", {
+			method: "POST",
+			body: JSON.stringify(data)
+		});
+		if (response.ok) {
+			window.location.href = "/";
+		} else {
+			formErrorElement.innerText = await response.text();
+		}
+	});
+
+	resendButtonElement.addEventListener("click", async () => {
+		const response = await fetch("/api/email-verification/resend", {
+			method: "POST"
+		});
+		if (response.ok) {
+			resendMessageElement.innerText = "A new code was sent to your inbox.";
+		} else {
+			resendMessageElement.innerText = await response.text();
+		}
+	});
+</script>

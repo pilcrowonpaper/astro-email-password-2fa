@@ -1,0 +1,36 @@
+---
+import { getUserRecoverCode } from "@lib/user";
+
+if (Astro.locals.user === null || Astro.locals.session === null) {
+	return Astro.redirect("/login");
+}
+if (!Astro.locals.user.emailVerified) {
+	return Astro.redirect("/verify-email");
+}
+if (!Astro.locals.user.registeredTOTP) {
+	return Astro.redirect("/totp/setup");
+}
+if (!Astro.locals.session.twoFactorVerified) {
+	return Astro.redirect("/totp");
+}
+
+const recoveryCode = getUserRecoverCode(Astro.locals.user.id);
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+	</head>
+	<body>
+		<main>
+			<h1>Recovery code</h1>
+			<p>Your recovery code is: {recoveryCode}</p>
+			<p>You can use this recovery code if you lose access to your second factors.</p>
+			<a href="/">Next</a>
+		</main>
+	</body>
+</html>

@@ -1,0 +1,87 @@
+---
+import { validatePasswordResetSessionRequest } from "@lib/password";
+
+const session = validatePasswordResetSessionRequest(Astro);
+if (session === null) {
+	return Astro.redirect("/forgot-password");
+}
+if (!session.emailVerified) {
+	return Astro.redirect("/reset-password/verify-email");
+}
+if (session.twoFactorVerified) {
+	return Astro.redirect("/reset-password");
+}
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Two-factor authentication</title>
+	</head>
+	<body>
+		<main>
+			<h1>Two-factor authentication</h1>
+			<p>Enter the code in your authenticator app.</p>
+			<form id="form-totp">
+				<label for="form-totp.code">Code</label>
+				<input id="form-totp.code" name="code" /><br />
+				<button>Verify</button>
+				<p id="form-totp.message"></p>
+			</form>
+			<section>
+				<h2>Use your recovery code instead</h2>
+				<form id="form-recovery-code">
+					<label for="form-recovery-code.code">Recovery code</label>
+					<input id="form-recovery-code.code" name="code" /><br />
+					<button>Verify</button>
+					<p id="form-recovery-code.message"></p>
+				</form>
+			</section>
+		</main>
+	</body>
+</html>
+
+<script>
+	const totpFormElement = document.getElementById("form-totp")!;
+	const totpFormErrorElement = document.getElementById("form-totp.message")!;
+
+	totpFormElement.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const data = {
+			code: formData.get("code")
+		};
+		const response = await fetch("/api/password/reset/totp", {
+			method: "POST",
+			body: JSON.stringify(data)
+		});
+		if (response.ok) {
+			window.location.href = "/reset-password";
+		} else {
+			totpFormErrorElement.innerText = await response.text();
+		}
+	});
+
+	const recoveryCodeFormElement = document.getElementById("form-recovery-code")!;
+	const recoveryCodeErrorElement = document.getElementById("form-recovery-code.message")!;
+
+	recoveryCodeFormElement.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const data = {
+			code: formData.get("code")
+		};
+		const response = await fetch("/api/password/reset/recovery-code", {
+			method: "POST",
+			body: JSON.stringify(data)
+		});
+		if (response.ok) {
+			window.location.href = "/reset-password";
+		} else {
+			recoveryCodeErrorElement.innerText = await response.text();
+		}
+	});
+</script>

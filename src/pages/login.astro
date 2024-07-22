@@ -1,0 +1,62 @@
+---
+if (Astro.locals.session !== null && Astro.locals.user !== null) {
+	if (!Astro.locals.user.emailVerified) {
+		return Astro.redirect("/verify-email");
+	}
+	if (!Astro.locals.user.registeredTOTP) {
+		return Astro.redirect("/totp/setup");
+	}
+	if (!Astro.locals.session.twoFactorVerified) {
+		return Astro.redirect("/totp");
+	}
+	return Astro.redirect("/");
+}
+---
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Create an account</title>
+	</head>
+	<body>
+		<main>
+			<h1>Sign in</h1>
+			<form id="form-login">
+				<label for="form-login.email">Email</label>
+				<input type="email" id="form-login.email" name="email" autocomplete="username" /><br />
+				<label for="form-login.password">Password</label>
+				<input type="password" id="form-login.password" name="password" autocomplete="current-password" /><br />
+				<button>Continue</button>
+				<p id="form-login.message"></p>
+			</form>
+			<a href="/signup">Create an account</a>
+			<a href="/forgot-password">Forgot password?</a>
+		</main>
+	</body>
+</html>
+
+<script>
+	const formElement = document.getElementById("form-login")!;
+	const formErrorElement = document.getElementById("form-login.message")!;
+
+	formElement.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const data = {
+			email: formData.get("email"),
+			password: formData.get("password")
+		};
+		const response = await fetch("/api/login", {
+			method: "POST",
+			body: JSON.stringify(data)
+		});
+		if (response.ok) {
+			window.location.href = "/";
+		} else {
+			formErrorElement.innerText = await response.text();
+		}
+	});
+</script>

@@ -1,0 +1,45 @@
+---
+if (Astro.locals.user === null || Astro.locals.session === null) {
+	return Astro.redirect("/login");
+}
+if (!Astro.locals.user.emailVerified) {
+	return Astro.redirect("/verify-email");
+}
+if (!Astro.locals.user.registeredTOTP) {
+	return Astro.redirect("/totp/setup");
+}
+if (!Astro.locals.session.twoFactorVerified) {
+	return Astro.redirect("/totp");
+}
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+	</head>
+	<body>
+		<header>
+            <a href="/">Home</a>
+			<a href="/settings">Settings</a>
+		</header>
+		<main>
+			<h1>Hi {Astro.locals.user.username}!</h1>
+            <button id="button-logout">Sign out</button>
+		</main>
+	</body>
+</html>
+
+<script>
+	const logoutButton = document.getElementById("button-logout")!;
+
+	logoutButton.addEventListener("click", async () => {
+		await fetch("/api/logout", {
+			method: "POST"
+		});
+		window.location.href = "/login";
+	});
+</script>

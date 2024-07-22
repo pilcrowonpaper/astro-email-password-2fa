@@ -1,0 +1,54 @@
+---
+import { validatePasswordResetSessionRequest } from "@lib/password";
+
+const session = validatePasswordResetSessionRequest(Astro);
+if (session === null) {
+	return Astro.redirect("/forgot-password");
+}
+if (!session.emailVerified) {
+	return Astro.redirect("/reset-password/verify-email");
+}
+if (!session.twoFactorVerified) {
+	return Astro.redirect("/reset-password/totp");
+}
+---
+
+<html>
+	<head>
+		<title>Enter your new password</title>
+	</head>
+	<body>
+		<main>
+			<h1>Enter your new password</h1>
+			<form id="form-reset">
+				<input id="form-reset.email" name="email" value={session.email} hidden /><br />
+				<label for="form-reset.password">Password</label>
+				<input type="password" id="form-reset.password" name="password" autocomplete="new-password" /><br />
+				<button>Reset password</button>
+				<p id="form-reset.message"></p>
+			</form>
+		</main>
+	</body>
+</html>
+
+<script>
+	const formElement = document.getElementById("form-reset")!;
+	const formErrorElement = document.getElementById("form-reset.message")!;
+
+	formElement.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const data = {
+			password: formData.get("password")
+		};
+		const response = await fetch("/api/password/reset", {
+			method: "POST",
+			body: JSON.stringify(data)
+		});
+		if (response.ok) {
+			window.location.href = "/";
+		} else {
+			formErrorElement.innerText = await response.text();
+		}
+	});
+</script>
