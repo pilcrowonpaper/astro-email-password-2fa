@@ -27,7 +27,7 @@ if (session.twoFactorVerified) {
 			<p>Enter the code in your authenticator app.</p>
 			<form id="form-totp">
 				<label for="form-totp.code">Code</label>
-				<input id="form-totp.code" name="code" /><br />
+				<input id="form-totp.code" name="code" required /><br />
 				<button>Verify</button>
 				<p id="form-totp.message"></p>
 			</form>
@@ -35,7 +35,7 @@ if (session.twoFactorVerified) {
 				<h2>Use your recovery code instead</h2>
 				<form id="form-recovery-code">
 					<label for="form-recovery-code.code">Recovery code</label>
-					<input id="form-recovery-code.code" name="code" /><br />
+					<input id="form-recovery-code.code" name="code" required /><br />
 					<button>Verify</button>
 					<p id="form-recovery-code.message"></p>
 				</form>

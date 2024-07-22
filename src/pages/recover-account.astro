@@ -26,7 +26,7 @@ if (Astro.locals.session.twoFactorVerified) {
 			<h1>Recover your account</h1>
 			<form id="form-recover">
 				<label for="form-recover.code">Recovery code</label>
-				<input id="form-recover.code" name="code" /><br />
+				<input id="form-recover.code" name="code" required /><br />
 				<button>Verify</button>
 				<p id="form-recover.message"></p>
 			</form>

@@ -23,7 +23,7 @@ if (session.emailVerified) {
 			<p>We sent an 8-digit code to {session.email}.</p>
 			<form id="form-verify">
 				<label for="form-verify.code">Code</label>
-				<input id="form-verify.code" name="code" />
+				<input id="form-verify.code" name="code" required />
 				<button>verify</button>
 				<p id="form-verify.message"></p>
 			</form>

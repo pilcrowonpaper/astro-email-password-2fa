@@ -21,9 +21,9 @@ if (!session.twoFactorVerified) {
 		<main>
 			<h1>Enter your new password</h1>
 			<form id="form-reset">
-				<input id="form-reset.email" name="email" value={session.email} hidden /><br />
+				<input id="form-reset.email" name="email" value={session.email} hidden required /><br />
 				<label for="form-reset.password">Password</label>
-				<input type="password" id="form-reset.password" name="password" autocomplete="new-password" /><br />
+				<input type="password" id="form-reset.password" name="password" autocomplete="new-password" required /><br />
 				<button>Reset password</button>
 				<p id="form-reset.message"></p>
 			</form>

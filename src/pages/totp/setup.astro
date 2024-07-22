@@ -33,9 +33,9 @@ const qrcode = renderSVG(keyURI);
 			<h1>Set up two-factor authentication</h1>
 			<div style="width:200px; height: 200px;" set:html={qrcode} />
 			<form id="form-totp">
-				<input name="key" value={encodedTOTPKey} hidden />
+				<input name="key" value={encodedTOTPKey} hidden required />
 				<label for="form-totp.code">Verify the code from the app</label>
-				<input id="form-totp.code" name="code" /><br />
+				<input id="form-totp.code" name="code" required /><br />
 				<button>Save</button>
 				<p id="form-totp.message"></p>
 			</form>
