@@ -26,6 +26,7 @@ export class ConstantRefillTokenBucket<_Key> {
 			bucket.refilledAt = now;
 		}
 		if (bucket.count < cost) {
+			this.storage.set(key, bucket);
 			return false;
 		}
 		bucket.count -= cost;
@@ -35,26 +36,21 @@ export class ConstantRefillTokenBucket<_Key> {
 }
 
 export class Throttler<_Key> {
-	public waitTimes: number[];
+	public timeoutSeconds: number[];
 
 	private storage = new Map<_Key, ThrottlingCounter>();
 
-	constructor(waitTimes: number[]) {
-		this.waitTimes = waitTimes;
+	constructor(timeoutSeconds: number[]) {
+		this.timeoutSeconds = timeoutSeconds;
 	}
 
 	public check(key: _Key): boolean {
 		let counter = this.storage.get(key) ?? null;
 		const now = Date.now();
 		if (counter === null) {
-			counter = {
-				waitTime: 0,
-				updatedAt: now
-			};
-			this.storage.set(key, counter);
 			return true;
 		}
-		return now - counter.updatedAt >= this.waitTimes[counter.waitTime] * 1000;
+		return now - counter.updatedAt >= this.timeoutSeconds[counter.timeout] * 1000;
 	}
 
 	public increment(key: _Key): void {
@@ -62,14 +58,14 @@ export class Throttler<_Key> {
 		const now = Date.now();
 		if (counter === null) {
 			counter = {
-				waitTime: 0,
+				timeout: 0,
 				updatedAt: now
 			};
 			this.storage.set(key, counter);
 			return;
 		}
 		counter.updatedAt = now;
-		counter.waitTime = Math.min(counter.waitTime + 1, this.waitTimes.length - 1);
+		counter.timeout = Math.min(counter.timeout + 1, this.timeoutSeconds.length - 1);
 		this.storage.set(key, counter);
 	}
 
@@ -104,6 +100,7 @@ export class FixedRefillTokenBucket<_Key> {
 			bucket.count = this.max;
 		}
 		if (bucket.count < cost) {
+			this.storage.set(key, bucket);
 			return false;
 		}
 		bucket.count -= cost;
@@ -122,6 +119,6 @@ interface Bucket {
 }
 
 interface ThrottlingCounter {
-	waitTime: number;
+	timeout: number;
 	updatedAt: number;
 }
