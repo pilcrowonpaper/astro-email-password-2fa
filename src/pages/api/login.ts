@@ -22,11 +22,11 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-    if (email === "" || password === "") {
-        return new Response("Please enter your email and password.", {
+	if (email === "" || password === "") {
+		return new Response("Please enter your email and password.", {
 			status: 400
 		});
-    }
+	}
 	if (!verifyEmailInput(email)) {
 		return new Response("Invalid email", {
 			status: 400

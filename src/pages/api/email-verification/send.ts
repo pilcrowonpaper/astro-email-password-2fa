@@ -4,7 +4,7 @@ import {
 	sendVerificationEmailBucket,
 	sendVerificationEmail,
 	verifyEmailInput,
-    checkEmailAvailability
+	checkEmailAvailability
 } from "@lib/email";
 
 import type { APIContext } from "astro";
@@ -35,12 +35,12 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-    const emailAvailable = checkEmailAvailability(email)
-    if (!emailAvailable) {
-        return new Response("This email is already used", {
+	const emailAvailable = checkEmailAvailability(email);
+	if (!emailAvailable) {
+		return new Response("This email is already used", {
 			status: 401
 		});
-    }
+	}
 	if (!sendVerificationEmailBucket.check(context.locals.user.id, 1)) {
 		return new Response("Too many requests", {
 			status: 429

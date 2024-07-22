@@ -11,7 +11,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-    if (!context.locals.user.registeredTOTP) {
+	if (!context.locals.user.registeredTOTP) {
 		return new Response(null, {
 			status: 401
 		});

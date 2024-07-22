@@ -12,11 +12,11 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-    if (!context.locals.user.emailVerified) {
-        return new Response(null, {
+	if (!context.locals.user.emailVerified) {
+		return new Response(null, {
 			status: 401
 		});
-    }
+	}
 	if (context.locals.user.registeredTOTP && !context.locals.session.twoFactorVerified) {
 		return new Response(null, {
 			status: 401
@@ -33,7 +33,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-    if (code === "") {
+	if (code === "") {
 		return new Response("Please enter your code", {
 			status: 401
 		});

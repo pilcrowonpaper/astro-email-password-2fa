@@ -27,12 +27,12 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-    if (code === "") {
+	if (code === "") {
 		return new Response("Please enter your code", {
 			status: 401
 		});
 	}
-    if (!recoveryCodeBucket.check(session.userId, 1)) {
+	if (!recoveryCodeBucket.check(session.userId, 1)) {
 		return new Response("Too many requests", {
 			status: 429
 		});

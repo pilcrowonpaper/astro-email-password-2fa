@@ -36,11 +36,11 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-    if (email === "" || password === "" || username === "") {
-        return new Response("Please enter your username, email, and password", {
+	if (email === "" || password === "" || username === "") {
+		return new Response("Please enter your username, email, and password", {
 			status: 400
 		});
-    }
+	}
 	if (!verifyEmailInput(email)) {
 		return new Response("Invalid email", {
 			status: 400

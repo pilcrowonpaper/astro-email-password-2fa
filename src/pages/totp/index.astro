@@ -26,7 +26,7 @@ if (Astro.locals.session.twoFactorVerified) {
 			<h1>Two-factor authentication</h1>
 			<form id="form-totp">
 				<label for="form-totp.code">Enter the code from your app</label>
-				<input id="form-totp.code" name="code" autocomplete="one-time-code"/><br />
+				<input id="form-totp.code" name="code" autocomplete="one-time-code" /><br />
 				<button>Verify</button>
 				<p id="form-totp.message"></p>
 			</form>

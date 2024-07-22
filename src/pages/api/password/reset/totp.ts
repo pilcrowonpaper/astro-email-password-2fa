@@ -39,7 +39,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-    if (!totpBucket.check(session.userId, 1)) {
+	if (!totpBucket.check(session.userId, 1)) {
 		return new Response("Too many requests", {
 			status: 429
 		});
