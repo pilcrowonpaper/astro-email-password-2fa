@@ -1,9 +1,9 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { getUserWithPasswordHashFromEmail } from "@lib/user";
 import { verifyPasswordHash } from "@lib/password";
 import { createSession, lucia } from "@lib/session";
 import { verifyEmailInput } from "@lib/email";
 import { Throttler } from "@lib/rate-limit";
+import { getUserFromEmail, getUserPasswordHash } from "@lib/user";
 
 import type { APIContext } from "astro";
 import type { SessionFlags } from "@lib/session";
@@ -32,7 +32,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	const user = getUserWithPasswordHashFromEmail(email);
+	const user = getUserFromEmail(email);
 	if (user === null) {
 		return new Response("Account does not exist", {
 			status: 400
@@ -43,7 +43,8 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 429
 		});
 	}
-	const validPassword = await verifyPasswordHash(user.passwordHash, password);
+	const passwordHash = getUserPasswordHash(user.id);
+	const validPassword = await verifyPasswordHash(passwordHash, password);
 	if (!validPassword) {
 		throttler.increment(user.id);
 		return new Response("Invalid password", {

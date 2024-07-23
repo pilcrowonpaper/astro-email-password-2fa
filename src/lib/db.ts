@@ -19,4 +19,10 @@ const adapter: SyncAdapter<sqlite3.RunResult> = {
 	}
 };
 
-export const db = new SyncDatabase(adapter);
+class Database extends SyncDatabase<sqlite3.RunResult> {
+	public inTransaction(): boolean {
+		return sqlite.inTransaction;
+	}
+}
+
+export const db = new Database(adapter);

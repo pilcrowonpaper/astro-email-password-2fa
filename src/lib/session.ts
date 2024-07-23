@@ -75,10 +75,6 @@ export function verifySession2FA(sessionId: string): void {
 	db.execute("UPDATE session SET two_factor_verified = 1 WHERE id = ?", [sessionId]);
 }
 
-export function unverifySession2FA(sessionId: string): void {
-	db.execute("UPDATE session SET two_factor_verified = 0 WHERE id = ?", [sessionId]);
-}
-
 export interface SessionFlags {
 	twoFactorVerified: boolean;
 }

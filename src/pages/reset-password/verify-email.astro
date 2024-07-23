@@ -7,7 +7,7 @@ if (session === null) {
 }
 if (session.emailVerified) {
 	if (!session.twoFactorVerified) {
-		return Astro.redirect("/reset-password/totp");
+		return Astro.redirect("/reset-password/2fa");
 	}
 	return Astro.redirect("/reset-password");
 }

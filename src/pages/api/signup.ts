@@ -1,5 +1,5 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { hashPassword, verifyPasswordStrength } from "@lib/password";
+import { verifyPasswordStrength } from "@lib/password";
 import { createSession, lucia } from "@lib/session";
 import { createUser, verifyUsernameInput } from "@lib/user";
 import {
@@ -66,8 +66,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	const passwordHash = await hashPassword(password);
-	const user = createUser(email, username, passwordHash);
+	const user = await createUser(email, username, password);
 	const emailVerificationRequest = createEmailVerificationRequest(user.id, user.email);
 	sendVerificationEmail(emailVerificationRequest.email, emailVerificationRequest.code);
 	const sessionFlags: SessionFlags = {

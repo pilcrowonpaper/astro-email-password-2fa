@@ -1,6 +1,6 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { getUserPasswordHash, updateUserPassword } from "@lib/user";
-import { hashPassword, verifyPasswordHash, verifyPasswordStrength } from "@lib/password";
+import { verifyPasswordHash, verifyPasswordStrength } from "@lib/password";
 
 import type { APIContext } from "astro";
 
@@ -38,18 +38,12 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	const passwordHash = getUserPasswordHash(context.locals.user.id);
-	if (passwordHash === null) {
-		return new Response("Unknown", {
-			status: 500
-		});
-	}
 	const validPassword = await verifyPasswordHash(passwordHash, password);
 	if (!validPassword) {
 		return new Response("Incorrect password", {
 			status: 401
 		});
 	}
-	const newPasswordHash = await hashPassword(newPassword);
-	updateUserPassword(context.locals.user.id, newPasswordHash);
+	await updateUserPassword(context.locals.session.id, context.locals.user.id, password);
 	return new Response();
 }

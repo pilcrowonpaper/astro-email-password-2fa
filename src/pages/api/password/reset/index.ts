@@ -1,6 +1,6 @@
 import { invalidateUserPasswordResetSession, validatePasswordResetSessionRequest } from "@lib/password";
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { hashPassword, verifyPasswordStrength } from "@lib/password";
+import { verifyPasswordStrength } from "@lib/password";
 import { createSession, lucia } from "@lib/session";
 import { getUser, updateUserPasswordWithEmailVerification } from "@lib/user";
 
@@ -15,6 +15,11 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	const user = getUser(passwordResetSession.userId);
+	if (user === null) {
+		return new Response(null, {
+			status: 500
+		});
+	}
 	if (user.registeredTOTP && !passwordResetSession.twoFactorVerified) {
 		return new Response(null, {
 			status: 401
@@ -42,8 +47,7 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	invalidateUserPasswordResetSession(passwordResetSession.userId);
-	const passwordHash = await hashPassword(password);
-	updateUserPasswordWithEmailVerification(passwordResetSession.userId, passwordResetSession.email, passwordHash);
+	await updateUserPasswordWithEmailVerification(passwordResetSession.userId, passwordResetSession.email, password);
 
 	const sessionFlags: SessionFlags = {
 		twoFactorVerified: true

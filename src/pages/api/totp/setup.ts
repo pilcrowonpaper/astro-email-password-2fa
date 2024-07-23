@@ -2,7 +2,6 @@ import { base64 } from "@oslojs/encoding";
 import { verifyTOTP } from "@oslojs/otp";
 import { updateUserTOTPKey } from "../../..//lib/user";
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { verifySession2FA } from "@lib/session";
 
 import type { APIContext } from "astro";
 
@@ -54,7 +53,6 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	updateUserTOTPKey(context.locals.session.userId, key);
-	verifySession2FA(context.locals.session.id);
+	updateUserTOTPKey(context.locals.session.id, context.locals.session.userId, key);
 	return new Response();
 }

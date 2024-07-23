@@ -13,6 +13,6 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	const code = resetUserRecoveryCode(context.locals.session.userId);
+	const code = resetUserRecoveryCode(context.locals.session.id, context.locals.session.userId);
 	return new Response(code);
 }

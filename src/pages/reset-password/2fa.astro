@@ -1,12 +1,23 @@
 ---
 import { validatePasswordResetSessionRequest } from "@lib/password";
+import { getUser } from "@lib/user";
 
 const session = validatePasswordResetSessionRequest(Astro);
+
 if (session === null) {
 	return Astro.redirect("/forgot-password");
 }
+const user = getUser(session.userId);
+if (user === null) {
+	return new Response(null, {
+		status: 500
+	});
+}
 if (!session.emailVerified) {
 	return Astro.redirect("/reset-password/verify-email");
+}
+if (!user.registeredTOTP) {
+	return Astro.redirect("/reset-password");
 }
 if (session.twoFactorVerified) {
 	return Astro.redirect("/reset-password");

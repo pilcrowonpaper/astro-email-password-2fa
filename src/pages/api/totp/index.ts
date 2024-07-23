@@ -1,10 +1,10 @@
 import { verifyTOTP } from "@oslojs/otp";
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { verifySession2FA } from "@lib/session";
-
-import type { APIContext } from "astro";
 import { totpBucket } from "@lib/2fa";
 import { getUserTOTPKey } from "@lib/user";
+
+import type { APIContext } from "astro";
 
 export async function POST(context: APIContext): Promise<Response> {
 	if (context.locals.session === null || context.locals.user === null) {

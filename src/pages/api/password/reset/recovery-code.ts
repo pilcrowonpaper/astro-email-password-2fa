@@ -1,6 +1,6 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { getUserRecoverCode, resetUserRecoveryCode, updateUserTOTPKey } from "@lib/user";
-import { validatePasswordResetSessionRequest, verifyPasswordResetSession2FA } from "@lib/password";
+import { verifyUserRecoveryCode } from "@lib/user";
+import { validatePasswordResetSessionRequest } from "@lib/password";
 import { recoveryCodeBucket } from "@lib/2fa";
 
 import type { APIContext } from "astro";
@@ -37,15 +37,12 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 429
 		});
 	}
-	const recoveryCode = getUserRecoverCode(session.userId);
-	if (code !== recoveryCode) {
+	const valid = verifyUserRecoveryCode(session.userId, code);
+	if (!valid) {
 		return new Response("Invalid code", {
 			status: 400
 		});
 	}
-	resetUserRecoveryCode(session.userId);
-	updateUserTOTPKey(session.userId, null);
-	verifyPasswordResetSession2FA(session.id);
 	recoveryCodeBucket.reset(session.userId);
 	return new Response();
 }
