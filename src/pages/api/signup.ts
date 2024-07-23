@@ -55,12 +55,10 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	if (clientIP !== null) {
-		if (!bucket.check(clientIP, 1)) {
-			return new Response("Too many requests", {
-				status: 429
-			});
-		}
+	if (clientIP !== null && !bucket.check(clientIP, 1)) {
+		return new Response("Too many requests", {
+			status: 429
+		});
 	}
 	const strongPassword = await verifyPasswordStrength(password);
 	if (!strongPassword) {

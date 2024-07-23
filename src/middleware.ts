@@ -13,7 +13,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		} else {
 			cost = 2;
 		}
-		if (clientIP === null || !bucket.check(clientIP, cost)) {
+		if (!bucket.check(clientIP, cost)) {
 			return new Response("Too many requests", {
 				status: 429
 			});
