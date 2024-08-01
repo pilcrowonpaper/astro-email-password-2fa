@@ -13,7 +13,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	const parser = new ObjectParser(data);
 	let email: string;
 	try {
-		email = parser.getString("email");
+		email = parser.getString("email").toLowerCase();
 	} catch {
 		return new Response("Invalid or missing fields", {
 			status: 400

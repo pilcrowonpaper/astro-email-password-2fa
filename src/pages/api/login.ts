@@ -15,7 +15,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	const parser = new ObjectParser(data);
 	let email: string, password: string;
 	try {
-		email = parser.getString("email");
+		email = parser.getString("email").toLowerCase();
 		password = parser.getString("password");
 	} catch {
 		return new Response("Invalid or missing fields", {
