@@ -5,7 +5,7 @@ if (Astro.locals.user === null || Astro.locals.session === null) {
 if (!Astro.locals.user.emailVerified) {
 	return Astro.redirect("/verify-email");
 }
-if (Astro.locals.user.registeredTOTP) {
+if (!Astro.locals.user.registeredTOTP) {
 	return Astro.redirect("/totp/setup");
 }
 if (Astro.locals.session.twoFactorVerified) {
