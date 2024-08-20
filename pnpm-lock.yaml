@@ -23,8 +23,8 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       "@oslojs/encoding":
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: 0.4.1
+        version: 0.4.1
       "@oslojs/otp":
         specifier: ^0.2.0
         version: 0.2.0
@@ -762,6 +762,10 @@ packages:
   "@oslojs/encoding@0.3.0":
     resolution:
       { integrity: sha512-i374LSDXuo2l+waPlejutIkw1zOA1wWxpvaXwQgyGsr5eZwX29hH1KIKFopPTriR4DKH+7nL7c5wNx16a/6voQ== }
+
+  "@oslojs/encoding@0.4.1":
+    resolution:
+      { integrity: sha512-hkjo6MuIK/kQR5CrGNdAPZhS01ZCXuWDRJ187zh6qqF2+yMHZpD9fAYpX8q2bOO6Ryhl3XpCT6kUX76N8hhm4Q== }
 
   "@oslojs/otp@0.2.0":
     resolution:
@@ -3345,6 +3349,8 @@ snapshots:
       "@oslojs/binary": 0.2.3
 
   "@oslojs/encoding@0.3.0": {}
+
+  "@oslojs/encoding@0.4.1": {}
 
   "@oslojs/otp@0.2.0":
     dependencies:

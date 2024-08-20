@@ -1,4 +1,4 @@
-import { base64 } from "@oslojs/encoding";
+import { decodeBase64 } from "@oslojs/encoding";
 import { verifyTOTP } from "@oslojs/otp";
 import { updateUserTOTPKey } from "../../..//lib/user";
 import { ObjectParser } from "@pilcrowjs/object-parser";
@@ -42,7 +42,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	const key = base64.decode(encodedKey);
+	const key = decodeBase64(encodedKey);
 	if (key.byteLength !== 20) {
 		return new Response("Invalid key", {
 			status: 400

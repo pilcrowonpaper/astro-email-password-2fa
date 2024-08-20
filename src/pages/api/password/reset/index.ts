@@ -1,7 +1,11 @@
-import { invalidateUserPasswordResetSession, validatePasswordResetSessionRequest } from "@lib/password";
+import {
+	deletePasswordResetSessionCookie,
+	invalidateUserPasswordResetSession,
+	validatePasswordResetSessionRequest
+} from "@lib/password";
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { verifyPasswordStrength } from "@lib/password";
-import { createSession, lucia } from "@lib/session";
+import { createSession, setSessionCookie } from "@lib/session";
 import { getUser, updateUserPasswordWithEmailVerification } from "@lib/user";
 
 import type { APIContext } from "astro";
@@ -53,16 +57,7 @@ export async function POST(context: APIContext): Promise<Response> {
 		twoFactorVerified: true
 	};
 	const session = createSession(passwordResetSession.userId, sessionFlags);
-
-	const sessionCookie = lucia.createSessionCookie(session.id, session.expiresAt);
-
-	context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.npmCookieOptions());
-	context.cookies.set("password_reset_session", "", {
-		maxAge: 0,
-		sameSite: "lax",
-		httpOnly: true,
-		path: "/",
-		secure: !import.meta.env.DEV
-	});
+	setSessionCookie(context, session);
+	deletePasswordResetSessionCookie(context);
 	return new Response();
 }

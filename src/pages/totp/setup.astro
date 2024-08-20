@@ -1,5 +1,5 @@
 ---
-import { base64 } from "@oslojs/encoding";
+import { encodeBase64 } from "@oslojs/encoding";
 import { createTOTPKeyURI } from "@oslojs/otp";
 import { renderSVG } from "uqr";
 
@@ -15,7 +15,7 @@ if (Astro.locals.user.registeredTOTP && !Astro.locals.session.twoFactorVerified)
 
 const totpKey = new Uint8Array(20);
 crypto.getRandomValues(totpKey);
-const encodedTOTPKey = base64.encode(totpKey);
+const encodedTOTPKey = encodeBase64(totpKey);
 const keyURI = createTOTPKeyURI("Demo", Astro.locals.user.username, totpKey, 30, 6);
 const qrcode = renderSVG(keyURI);
 ---

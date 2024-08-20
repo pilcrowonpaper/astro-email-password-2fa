@@ -1,4 +1,4 @@
-import { lucia } from "@lib/session";
+import { invalidateSession, deleteSessionCookie } from "@lib/session";
 
 import type { APIContext } from "astro";
 
@@ -8,8 +8,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	await lucia.invalidateSession(context.locals.session.id);
-	const sessionCookie = lucia.createBlankSessionCookie();
-	context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.npmCookieOptions());
+	invalidateSession(context.locals.session.id);
+	deleteSessionCookie(context);
 	return new Response();
 }

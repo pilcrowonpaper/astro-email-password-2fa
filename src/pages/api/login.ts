@@ -1,6 +1,6 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { verifyPasswordHash } from "@lib/password";
-import { createSession, lucia } from "@lib/session";
+import { createSession, setSessionCookie } from "@lib/session";
 import { verifyEmailInput } from "@lib/email";
 import { Throttler } from "@lib/rate-limit";
 import { getUserFromEmail, getUserPasswordHash } from "@lib/user";
@@ -56,7 +56,6 @@ export async function POST(context: APIContext): Promise<Response> {
 		twoFactorVerified: false
 	};
 	const session = createSession(user.id, sessionFlags);
-	const sessionCookie = lucia.createSessionCookie(session.id, session.expiresAt);
-	context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.npmCookieOptions());
+	setSessionCookie(context, session);
 	return new Response();
 }

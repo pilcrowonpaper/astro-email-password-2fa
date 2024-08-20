@@ -1,4 +1,4 @@
-import { base32 } from "@oslojs/encoding";
+import { encodeBase32 } from "@oslojs/encoding";
 import { db } from "./db";
 import { hashPassword } from "./password";
 
@@ -194,7 +194,7 @@ export function updateUserTOTPKey(sessionId: string, userId: number, key: Uint8A
 function generateRandomRecoveryCode(): string {
 	const recoveryCodeBytes = new Uint8Array(10);
 	crypto.getRandomValues(recoveryCodeBytes);
-	const recoveryCode = base32.encode(recoveryCodeBytes);
+	const recoveryCode = encodeBase32(recoveryCodeBytes);
 	return recoveryCode;
 }
 

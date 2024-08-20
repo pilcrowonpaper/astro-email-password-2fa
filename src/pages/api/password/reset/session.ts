@@ -1,7 +1,12 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { verifyEmailInput } from "@lib/email";
 import { getUserFromEmail } from "@lib/user";
-import { createPasswordResetSession, invalidateUserPasswordResetSessions, sendPasswordResetEmail } from "@lib/password";
+import {
+	createPasswordResetSession,
+	invalidateUserPasswordResetSessions,
+	sendPasswordResetEmail,
+	setPasswordResetSessionCookie
+} from "@lib/password";
 import { ConstantRefillTokenBucket } from "@lib/rate-limit";
 
 import type { APIContext } from "astro";
@@ -38,12 +43,6 @@ export async function POST(context: APIContext): Promise<Response> {
 	invalidateUserPasswordResetSessions(user.id);
 	const session = createPasswordResetSession(user.id, user.email);
 	sendPasswordResetEmail(session.email, session.code);
-	context.cookies.set("password_reset_session", session.id, {
-		expires: session.expiresAt,
-		sameSite: "lax",
-		httpOnly: true,
-		path: "/",
-		secure: !import.meta.env.DEV
-	});
+	setPasswordResetSessionCookie(context, session);
 	return new Response();
 }

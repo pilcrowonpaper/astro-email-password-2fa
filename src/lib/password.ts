@@ -1,6 +1,6 @@
 import { hash, verify } from "@node-rs/argon2";
 import { sha1 } from "@oslojs/crypto/sha1";
-import { encodeHex } from "@oslojs/encoding";
+import { encodeHexLowerCase } from "@oslojs/encoding";
 import { generateSessionId } from "lucia";
 import { db } from "./db";
 import { generateRandomOTP, verifyExpirationDate } from "./utils";
@@ -21,7 +21,7 @@ export async function verifyPasswordHash(hash: string, password: string): Promis
 }
 
 export async function verifyPasswordStrength(password: string): Promise<boolean> {
-	const hash = encodeHex(sha1(new TextEncoder().encode(password)));
+	const hash = encodeHexLowerCase(sha1(new TextEncoder().encode(password)));
 	const hashPrefix = hash.slice(0, 5);
 	const response = await fetch(`https://api.pwnedpasswords.com/range/${hashPrefix}`);
 	const data = await response.text();
@@ -55,6 +55,28 @@ export function createPasswordResetSession(userId: number, email: string): Passw
 	return session;
 }
 
+export const passwordResetSessionCookieName = "password_reset_session";
+
+export function setPasswordResetSessionCookie(context: APIContext, session: PasswordResetSession): void {
+	context.cookies.set(passwordResetSessionCookieName, session.id, {
+		expires: session.expiresAt,
+		sameSite: "lax",
+		httpOnly: true,
+		path: "/",
+		secure: !import.meta.env.DEV
+	});
+}
+
+export function deletePasswordResetSessionCookie(context: APIContext): void {
+	context.cookies.set(passwordResetSessionCookieName, "", {
+		maxAge: 0,
+		sameSite: "lax",
+		httpOnly: true,
+		path: "/",
+		secure: !import.meta.env.DEV
+	});
+}
+
 export function invalidateUserPasswordResetSessions(userId: number) {
 	db.execute("DELETE FROM password_reset_session WHERE user_id = ?", [userId]);
 }
@@ -70,7 +92,7 @@ export function validatePasswordResetSessionRequest(context: APIContext): Passwo
 	}
 	if (!verifyExpirationDate(session.expiresAt)) {
 		invalidateUserPasswordResetSession(session.userId);
-		setBlankPasswordResetSessionCookie(context);
+		deletePasswordResetSessionCookie(context);
 		return null;
 	}
 	return session;
@@ -94,16 +116,6 @@ export function getPasswordResetSession(sessionId: string): PasswordResetSession
 		twoFactorVerified: Boolean(row.number(6))
 	};
 	return session;
-}
-
-export function setBlankPasswordResetSessionCookie(context: APIContext): void {
-	context.cookies.set("password_reset_session", "", {
-		maxAge: 0,
-		sameSite: "lax",
-		httpOnly: true,
-		path: "/",
-		secure: !import.meta.env.DEV
-	});
 }
 
 export function invalidateUserPasswordResetSession(userId: number): void {
