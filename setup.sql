@@ -13,7 +13,6 @@ CREATE TABLE session (
     id TEXT NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES user(id),
     expires_at INTEGER NOT NULL,
-    authenticated_at INTEGER NOT NULL,
     two_factor_verified INTEGER NOT NULL DEFAULT 0
 );
 
