@@ -1,7 +1,6 @@
 import { hash, verify } from "@node-rs/argon2";
 import { sha1 } from "@oslojs/crypto/sha1";
-import { encodeHexLowerCase } from "@oslojs/encoding";
-import { generateSessionId } from "lucia";
+import { encodeBase32, encodeHexLowerCase } from "@oslojs/encoding";
 import { db } from "./db";
 import { generateRandomOTP, verifyExpirationDate } from "./utils";
 
@@ -36,8 +35,12 @@ export async function verifyPasswordStrength(password: string): Promise<boolean>
 }
 
 export function createPasswordResetSession(userId: number, email: string): PasswordResetSession {
+	const idBytes = new Uint8Array(20);
+	crypto.getRandomValues(idBytes);
+	const id = encodeBase32(idBytes).toLowerCase();
+	
 	const session: PasswordResetSession = {
-		id: generateSessionId(),
+		id,
 		userId,
 		email,
 		expiresAt: new Date(Date.now() + 1000 * 60 * 10),
