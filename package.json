@@ -22,7 +22,6 @@
 		"@pilcrowjs/object-parser": "^0.0.3",
 		"astro": "^4.12.1",
 		"better-sqlite3": "^11.1.2",
-		"lucia": "0.0.0-remove-adapter-package.20240719033400",
 		"typescript": "^5.5.3",
 		"uqr": "^0.1.2"
 	},
