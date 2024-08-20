@@ -38,7 +38,7 @@ export function createPasswordResetSession(userId: number, email: string): Passw
 	const idBytes = new Uint8Array(20);
 	crypto.getRandomValues(idBytes);
 	const id = encodeBase32(idBytes).toLowerCase();
-	
+
 	const session: PasswordResetSession = {
 		id,
 		userId,
