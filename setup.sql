@@ -1,7 +1,6 @@
 CREATE TABLE user (
     id INTEGER NOT NULL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
-    created_at INTEGER NOT NULL,
     username TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     email_verified INTEGER NOT NULL DEFAULT 0,

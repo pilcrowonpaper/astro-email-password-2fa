@@ -9,10 +9,9 @@ export function verifyUsernameInput(username: string): boolean {
 export async function createUser(email: string, username: string, password: string): Promise<User> {
 	const passwordHash = await hashPassword(password);
 	const recoveryCode = generateRandomRecoveryCode();
-	const createdAt = new Date();
 	const row = db.queryOne(
-		"INSERT INTO user (email, username, password_hash, created_at, recovery_code) VALUES (?, ?, ?, ?, ?) RETURNING user.id",
-		[email, username, passwordHash, Math.floor(createdAt.getTime() / 1000), recoveryCode]
+		"INSERT INTO user (email, username, password_hash, recovery_code) VALUES (?, ?, ?, ?) RETURNING user.id",
+		[email, username, passwordHash, recoveryCode]
 	);
 	if (row === null) {
 		throw new Error("Unexpected error");
@@ -22,7 +21,6 @@ export async function createUser(email: string, username: string, password: stri
 		username,
 		email,
 		emailVerified: false,
-		createdAt,
 		registeredTOTP: false
 	};
 	return user;
@@ -30,7 +28,7 @@ export async function createUser(email: string, username: string, password: stri
 
 export function getUser(userId: number): User | null {
 	const row = db.queryOne(
-		"SELECT id, email, username, email_verified, created_at, IIF(totp_key IS NOT NULL, 1, 0) FROM user WHERE id = ?",
+		"SELECT id, email, username, email_verified, IIF(totp_key IS NOT NULL, 1, 0) FROM user WHERE id = ?",
 		[userId]
 	);
 	if (row === null) {
@@ -41,8 +39,7 @@ export function getUser(userId: number): User | null {
 		email: row.string(1),
 		username: row.string(2),
 		emailVerified: Boolean(row.number(3)),
-		createdAt: new Date(row.number(4) * 1000),
-		registeredTOTP: Boolean(row.number(5))
+		registeredTOTP: Boolean(row.number(4))
 	};
 	return user;
 }
@@ -73,7 +70,7 @@ export function getUserTOTPKey(userId: number): Uint8Array | null {
 
 export function getUserFromEmail(email: string): User | null {
 	const row = db.queryOne(
-		"SELECT id, email, username, email_verified, created_at, IIF(totp_key IS NOT NULL, 1, 0) FROM user WHERE email = ?",
+		"SELECT id, email, username, email_verified, IIF(totp_key IS NOT NULL, 1, 0) FROM user WHERE email = ?",
 		[email]
 	);
 	if (row === null) {
@@ -84,8 +81,7 @@ export function getUserFromEmail(email: string): User | null {
 		email: row.string(1),
 		username: row.string(2),
 		emailVerified: Boolean(row.number(3)),
-		createdAt: new Date(row.number(4) * 1000),
-		registeredTOTP: Boolean(row.number(5))
+		registeredTOTP: Boolean(row.number(4))
 	};
 	return user;
 }
@@ -203,6 +199,5 @@ export interface User {
 	email: string;
 	username: string;
 	emailVerified: boolean;
-	createdAt: Date;
 	registeredTOTP: boolean;
 }
