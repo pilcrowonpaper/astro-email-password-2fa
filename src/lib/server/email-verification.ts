@@ -1,6 +1,6 @@
 import { generateRandomOTP } from "./utils";
 import { db } from "./db";
-import { ConstantRefillTokenBucket } from "./rate-limit";
+import { ConstantRefillTokenBucket, FixedRefillTokenBucket } from "./rate-limit";
 import type { APIContext } from "astro";
 import { encodeBase32 } from "@oslojs/encoding";
 
@@ -88,7 +88,7 @@ export function getUserEmailVerificationRequestFromRequest(context: APIContext):
 	return request;
 }
 
-export const sendVerificationEmailBucket = new ConstantRefillTokenBucket<number>(3, 30);
+export const sendVerificationEmailBucket = new FixedRefillTokenBucket<number>(3, 60 * 10);
 
 export interface EmailVerificationRequest {
 	id: string;

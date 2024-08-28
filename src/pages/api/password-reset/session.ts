@@ -11,7 +11,7 @@ import { ConstantRefillTokenBucket } from "@lib/server/rate-limit";
 
 import type { APIContext } from "astro";
 
-const bucket = new ConstantRefillTokenBucket<string>(3, 30);
+const bucket = new ConstantRefillTokenBucket<string>(3, 60 * 5);
 
 export async function POST(context: APIContext): Promise<Response> {
 	const data: unknown = await context.request.json();
