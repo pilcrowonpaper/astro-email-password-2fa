@@ -74,16 +74,6 @@ export function resetUserRecoveryCode(userId: number): string {
 	return recoveryCode;
 }
 
-export function resetUser2FAWithRecoveryCode(userId: number, recoveryCode: string): boolean {
-	const newRecoveryCode = generateRandomRecoveryCode();
-	const result = db.execute("UPDATE user SET recovery_code = ?, totp_key = NULL WHERE id = ? AND recovery_code = ?", [
-		newRecoveryCode,
-		userId,
-		recoveryCode
-	]);
-	return result.changes > 0;
-}
-
 export function getUserFromEmail(email: string): User | null {
 	const row = db.queryOne(
 		"SELECT id, email, username, email_verified, IIF(totp_key IS NOT NULL, 1, 0) FROM user WHERE email = ?",

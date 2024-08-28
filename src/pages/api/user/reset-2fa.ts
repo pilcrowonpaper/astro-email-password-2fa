@@ -1,6 +1,5 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { recoveryCodeBucket } from "@lib/server/2fa";
-import { resetUser2FAWithRecoveryCode } from "@lib/server/user";
+import { recoveryCodeBucket, resetUser2FAWithRecoveryCode } from "@lib/server/2fa";
 
 import type { APIContext } from "astro";
 
@@ -35,7 +34,6 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 429
 		});
 	}
-	// TODO: Should all sessions be invalidated?
 	const valid = resetUser2FAWithRecoveryCode(context.locals.user.id, code);
 	if (!valid) {
 		return new Response("Invalid recovery code", {
