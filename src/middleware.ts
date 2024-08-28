@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
-import { validateRequest } from "./lib/session";
-import { ConstantRefillTokenBucket } from "./lib/rate-limit";
+import { ConstantRefillTokenBucket } from "@lib/server/rate-limit";
+import { validateRequest } from "@lib/server/session";
 
 const bucket = new ConstantRefillTokenBucket(100, 1);
 

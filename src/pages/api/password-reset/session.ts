@@ -1,13 +1,13 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { verifyEmailInput } from "@lib/email";
-import { getUserFromEmail } from "@lib/user";
+import { verifyEmailInput } from "@lib/server/email";
+import { getUserFromEmail } from "@lib/server/user";
 import {
 	createPasswordResetSession,
 	invalidateUserPasswordResetSessions,
 	sendPasswordResetEmail,
 	setPasswordResetSessionCookie
-} from "@lib/password";
-import { ConstantRefillTokenBucket } from "@lib/rate-limit";
+} from "@lib/server/password-reset";
+import { ConstantRefillTokenBucket } from "@lib/server/rate-limit";
 
 import type { APIContext } from "astro";
 

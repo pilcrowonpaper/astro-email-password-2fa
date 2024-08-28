@@ -1,36 +1,22 @@
 ---
 import {
-	getUserEmailVerificationRequest,
+	getUserEmailVerificationRequestFromRequest,
 	createEmailVerificationRequest,
 	sendVerificationEmail,
-	sendVerificationEmailBucket
-} from "@lib/email";
-import { verifyExpirationDate } from "@lib/utils";
+	setEmailVerificationRequestCookie
+} from "@lib/server/email-verification";
 
 if (Astro.locals.user === null) {
 	return Astro.redirect("/login");
 }
-let verificationRequest = getUserEmailVerificationRequest(Astro.locals.user.id);
-if (verificationRequest === null && Astro.locals.user.emailVerified) {
-	return Astro.redirect("/");
-}
-if (verificationRequest === null) {
-	if (!sendVerificationEmailBucket.check(Astro.locals.user.id, 1)) {
-		return new Response(null, {
-			status: 429
-		});
+let verificationRequest = getUserEmailVerificationRequestFromRequest(Astro);
+if (verificationRequest === null || Date.now() >= verificationRequest.expiresAt.getTime()) {
+	if (Astro.locals.user.emailVerified) {
+		return Astro.redirect("/");
 	}
-	// just in case the verification code is deleted
 	verificationRequest = createEmailVerificationRequest(Astro.locals.user.id, Astro.locals.user.email);
 	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
-} else if (!verifyExpirationDate(verificationRequest.expiresAt)) {
-	if (!sendVerificationEmailBucket.check(Astro.locals.user.id, 1)) {
-		return new Response(null, {
-			status: 429
-		});
-	}
-	verificationRequest = createEmailVerificationRequest(verificationRequest.userId, verificationRequest.email);
-	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
+	setEmailVerificationRequestCookie(Astro, verificationRequest);
 }
 ---
 
@@ -83,7 +69,7 @@ if (verificationRequest === null) {
 	});
 
 	resendButtonElement.addEventListener("click", async () => {
-		const response = await fetch("/api/email-verification/resend", {
+		const response = await fetch("/api/email-verification/resend-code", {
 			method: "POST"
 		});
 		if (response.ok) {

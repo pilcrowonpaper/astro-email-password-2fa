@@ -16,8 +16,8 @@ CREATE TABLE session (
 );
 
 CREATE TABLE email_verification_request (
-    id INTEGER NOT NULL PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES user(id),
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES user(id),
     email TEXT NOT NULL,
     code TEXT NOT NULL,
     expires_at INTEGER NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE email_verification_request (
 
 CREATE TABLE password_reset_session (
     id TEXT NOT NULL PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES user(id),
+    user_id INTEGER NOT NULL REFERENCES user(id),
     email TEXT NOT NULL,
     code TEXT NOT NULL,
     expires_at INTEGER NOT NULL,

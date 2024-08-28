@@ -1,17 +1,17 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { verifyPasswordStrength } from "@lib/password";
-import { createSession, setSessionCookie } from "@lib/session";
-import { createUser, verifyUsernameInput } from "@lib/user";
+import { verifyPasswordStrength } from "@lib/server/password";
+import { createSession, setSessionCookie } from "@lib/server/session";
+import { createUser, verifyUsernameInput } from "@lib/server/user";
+import { checkEmailAvailability, verifyEmailInput } from "@lib/server/email";
 import {
 	createEmailVerificationRequest,
 	sendVerificationEmail,
-	checkEmailAvailability,
-	verifyEmailInput
-} from "@lib/email";
-import { ConstantRefillTokenBucket } from "@lib/rate-limit";
+	setEmailVerificationRequestCookie
+} from "@lib/server/email-verification";
+import { ConstantRefillTokenBucket } from "@lib/server/rate-limit";
 
 import type { APIContext } from "astro";
-import type { SessionFlags } from "@lib/session";
+import type { SessionFlags } from "@lib/server/session";
 
 const bucket = new ConstantRefillTokenBucket(10, 5);
 
@@ -50,8 +50,9 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	if (password.length < 8 || password.length > 255) {
-		return new Response("Invalid password", {
+	const strongPassword = await verifyPasswordStrength(password);
+	if (!strongPassword) {
+		return new Response("Weak password", {
 			status: 400
 		});
 	}
@@ -60,19 +61,15 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 429
 		});
 	}
-	const strongPassword = await verifyPasswordStrength(password);
-	if (!strongPassword) {
-		return new Response("Weak password", {
-			status: 400
-		});
-	}
 	const user = await createUser(email, username, password);
 	const emailVerificationRequest = createEmailVerificationRequest(user.id, user.email);
 	sendVerificationEmail(emailVerificationRequest.email, emailVerificationRequest.code);
+	setEmailVerificationRequestCookie(context, emailVerificationRequest);
+
 	const sessionFlags: SessionFlags = {
 		twoFactorVerified: false
 	};
 	const session = createSession(user.id, sessionFlags);
 	setSessionCookie(context, session);
-	return new Response();
+	return new Response(null, { status: 201 });
 }

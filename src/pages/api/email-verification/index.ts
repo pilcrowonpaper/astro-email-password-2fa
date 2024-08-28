@@ -3,9 +3,9 @@ import {
 	createEmailVerificationRequest,
 	sendVerificationEmailBucket,
 	sendVerificationEmail,
-	verifyEmailInput,
-	checkEmailAvailability
-} from "@lib/email";
+	setEmailVerificationRequestCookie
+} from "@lib/server/email-verification";
+import { verifyEmailInput, checkEmailAvailability } from "@lib/server/email";
 
 import type { APIContext } from "astro";
 
@@ -48,5 +48,6 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	const verificationRequest = createEmailVerificationRequest(context.locals.user.id, email);
 	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
-	return new Response();
+	setEmailVerificationRequestCookie(context, verificationRequest);
+	return new Response(null, { status: 201 });
 }

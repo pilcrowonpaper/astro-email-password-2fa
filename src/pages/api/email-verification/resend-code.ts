@@ -1,9 +1,10 @@
 import {
 	createEmailVerificationRequest,
-	getUserEmailVerificationRequest,
+	getUserEmailVerificationRequestFromRequest,
 	sendVerificationEmailBucket,
-	sendVerificationEmail
-} from "@lib/email";
+	sendVerificationEmail,
+	setEmailVerificationRequestCookie
+} from "@lib/server/email-verification";
 
 import type { APIContext } from "astro";
 
@@ -13,10 +14,10 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	let verificationRequest = getUserEmailVerificationRequest(context.locals.user.id);
+	let verificationRequest = getUserEmailVerificationRequestFromRequest(context);
 	if (verificationRequest === null) {
-		return new Response("Invalid request", {
-			status: 400
+		return new Response(null, {
+			status: 401
 		});
 	}
 	if (!sendVerificationEmailBucket.check(context.locals.user.id, 1)) {
@@ -26,5 +27,6 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	verificationRequest = createEmailVerificationRequest(verificationRequest.userId, verificationRequest.email);
 	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
-	return new Response();
+	setEmailVerificationRequestCookie(context, verificationRequest);
+	return new Response(null, { status: 201 });
 }

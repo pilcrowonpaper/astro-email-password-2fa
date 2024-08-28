@@ -1,14 +1,17 @@
-import { validatePasswordResetSessionRequest, verifyPasswordResetSessionEmail } from "@lib/password";
+import {
+	validatePasswordResetSessionRequest,
+	setPasswordResetSessionAsEmailVerified
+} from "@lib/server/password-reset";
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { FixedRefillTokenBucket } from "@lib/rate-limit";
-import { verifyUserEmail } from "@lib/user";
+import { FixedRefillTokenBucket } from "@lib/server/rate-limit";
+import { setUserAsEmailVerifiedIfEmailMatches } from "@lib/server/user";
 
 import type { APIContext } from "astro";
 
 const bucket = new FixedRefillTokenBucket<number>(5, 60 * 30);
 
 export async function POST(context: APIContext): Promise<Response> {
-	const session = validatePasswordResetSessionRequest(context);
+	const { session } = validatePasswordResetSessionRequest(context);
 	if (session === null) {
 		return new Response(null, {
 			status: 401
@@ -45,7 +48,12 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	bucket.reset(session.userId);
-	verifyPasswordResetSessionEmail(session.id, session.email);
-	verifyUserEmail(session.userId, session.email);
-	return new Response();
+	setPasswordResetSessionAsEmailVerified(session.id);
+	const emailMatches = setUserAsEmailVerifiedIfEmailMatches(session.userId, session.email);
+	if (!emailMatches) {
+		return new Response("Please restart the process", {
+			status: 400
+		});
+	}
+	return new Response(null, { status: 201 });
 }

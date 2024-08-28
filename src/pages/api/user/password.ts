@@ -1,16 +1,17 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { getUserPasswordHash, updateUserPassword } from "@lib/user";
-import { verifyPasswordHash, verifyPasswordStrength } from "@lib/password";
+import { getUserPasswordHash, updateUserPassword } from "@lib/server/user";
+import { verifyPasswordHash, verifyPasswordStrength } from "@lib/server/password";
+import { invalidateUserSessionsExceptOne } from "@lib/server/session";
 
 import type { APIContext } from "astro";
 
-export async function POST(context: APIContext): Promise<Response> {
+export async function PATCH(context: APIContext): Promise<Response> {
 	if (context.locals.user === null || context.locals.session === null) {
 		return new Response(null, {
 			status: 401
 		});
 	}
-	if (context.locals.user.registeredTOTP && !context.locals.session.twoFactorVerified) {
+	if (context.locals.user.registered2FA && !context.locals.session.twoFactorVerified) {
 		return new Response(null, {
 			status: 401
 		});
@@ -23,11 +24,6 @@ export async function POST(context: APIContext): Promise<Response> {
 		newPassword = parser.getString("new_password");
 	} catch {
 		return new Response("Invalid or missing fields", {
-			status: 400
-		});
-	}
-	if (newPassword.length < 8 || newPassword.length > 255) {
-		return new Response("Invalid password", {
 			status: 400
 		});
 	}
@@ -44,6 +40,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	await updateUserPassword(context.locals.session.id, context.locals.user.id, password);
-	return new Response();
+	invalidateUserSessionsExceptOne(context.locals.user.id, context.locals.session.id);
+	await updateUserPassword(context.locals.user.id, newPassword);
+	return new Response(null, { status: 201 });
 }

@@ -1,7 +1,7 @@
 ---
-import { validatePasswordResetSessionRequest } from "@lib/password";
+import { validatePasswordResetSessionRequest } from "@lib/server/password-reset";
 
-const session = validatePasswordResetSessionRequest(Astro);
+const { session } = validatePasswordResetSessionRequest(Astro);
 if (session === null) {
 	return Astro.redirect("/forgot-password");
 }
@@ -41,7 +41,7 @@ if (session.emailVerified) {
 		const data = {
 			code: formData.get("code")
 		};
-		const response = await fetch("/api/password/reset/verify-email", {
+		const response = await fetch("/api/password-reset/verify-email", {
 			method: "POST",
 			body: JSON.stringify(data)
 		});

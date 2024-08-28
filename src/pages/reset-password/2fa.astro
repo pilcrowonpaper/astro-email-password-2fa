@@ -1,22 +1,15 @@
 ---
-import { validatePasswordResetSessionRequest } from "@lib/password";
-import { getUser } from "@lib/user";
+import { validatePasswordResetSessionRequest } from "@lib/server/password-reset";
 
-const session = validatePasswordResetSessionRequest(Astro);
+const { session, user } = validatePasswordResetSessionRequest(Astro);
 
 if (session === null) {
 	return Astro.redirect("/forgot-password");
 }
-const user = getUser(session.userId);
-if (user === null) {
-	return new Response(null, {
-		status: 500
-	});
-}
 if (!session.emailVerified) {
 	return Astro.redirect("/reset-password/verify-email");
 }
-if (!user.registeredTOTP) {
+if (!user.registered2FA) {
 	return Astro.redirect("/reset-password");
 }
 if (session.twoFactorVerified) {
@@ -65,7 +58,7 @@ if (session.twoFactorVerified) {
 		const data = {
 			code: formData.get("code")
 		};
-		const response = await fetch("/api/password/reset/totp", {
+		const response = await fetch("/api/password-reset/verify-2fa/totp", {
 			method: "POST",
 			body: JSON.stringify(data)
 		});
@@ -85,7 +78,7 @@ if (session.twoFactorVerified) {
 		const data = {
 			code: formData.get("code")
 		};
-		const response = await fetch("/api/password/reset/recovery-code", {
+		const response = await fetch("/api/password-reset/verify-2fa/recovery-code", {
 			method: "POST",
 			body: JSON.stringify(data)
 		});

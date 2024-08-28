@@ -1,11 +1,13 @@
 import { decodeBase64 } from "@oslojs/encoding";
 import { verifyTOTP } from "@oslojs/otp";
-import { updateUserTOTPKey } from "../../..//lib/user";
+import { updateUserTOTPKey } from "@lib/server/user";
 import { ObjectParser } from "@pilcrowjs/object-parser";
+import { setSessionAs2FAVerified } from "@lib/server/session";
+import { totpBucket } from "@lib/server/2fa";
 
 import type { APIContext } from "astro";
 
-export async function POST(context: APIContext): Promise<Response> {
+export async function PATCH(context: APIContext): Promise<Response> {
 	if (context.locals.session === null || context.locals.user === null) {
 		return new Response(null, {
 			status: 401
@@ -16,9 +18,14 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	if (context.locals.user.registeredTOTP && !context.locals.session.twoFactorVerified) {
+	if (context.locals.user.registered2FA && !context.locals.session.twoFactorVerified) {
 		return new Response(null, {
 			status: 401
+		});
+	}
+	if (!totpBucket.check(context.locals.user.id, 2)) {
+		return new Response("Too many requests", {
+			status: 429
 		});
 	}
 	const data: unknown = await context.request.json();
@@ -53,6 +60,8 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	updateUserTOTPKey(context.locals.session.id, context.locals.session.userId, key);
-	return new Response();
+	// TODO: Should a new recovery code be generated?
+	updateUserTOTPKey(context.locals.session.userId, key);
+	setSessionAs2FAVerified(context.locals.session.id);
+	return new Response(null, { status: 201 });
 }

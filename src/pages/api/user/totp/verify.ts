@@ -1,8 +1,8 @@
 import { verifyTOTP } from "@oslojs/otp";
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { verifySession2FA } from "@lib/session";
-import { totpBucket } from "@lib/2fa";
-import { getUserTOTPKey } from "@lib/user";
+import { setSessionAs2FAVerified } from "@lib/server/session";
+import { totpBucket } from "@lib/server/2fa";
+import { getUserTOTPKey } from "@lib/server/user";
 
 import type { APIContext } from "astro";
 
@@ -17,9 +17,14 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	if (context.locals.session.twoFactorVerified) {
-		return new Response("Already verified", {
-			status: 401
+	if (!context.locals.user.registered2FA) {
+		return new Response("Please set up two-factor authentication.", {
+			status: 400
+		});
+	}
+	if (!totpBucket.check(context.locals.user.id, 1)) {
+		return new Response("Too many requests", {
+			status: 429
 		});
 	}
 	const data: unknown = await context.request.json();
@@ -37,16 +42,6 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	if (!totpBucket.check(context.locals.user.id, 1)) {
-		return new Response("Too many requests", {
-			status: 429
-		});
-	}
-	if (!context.locals.user.registeredTOTP) {
-		return new Response("Please set up two-factor authentication.", {
-			status: 400
-		});
-	}
 	const totpKey = getUserTOTPKey(context.locals.user.id);
 	if (totpKey === null) {
 		return new Response("Please set up two-factor authentication.", {
@@ -59,6 +54,6 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	totpBucket.reset(context.locals.user.id);
-	verifySession2FA(context.locals.session.id);
-	return new Response();
+	setSessionAs2FAVerified(context.locals.session.id);
+	return new Response(null, { status: 201 });
 }

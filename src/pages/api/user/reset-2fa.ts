@@ -1,20 +1,18 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { verifyUserRecoveryCode } from "@lib/user";
-import { validatePasswordResetSessionRequest } from "@lib/password";
-import { recoveryCodeBucket } from "@lib/2fa";
+import { recoveryCodeBucket } from "@lib/server/2fa";
+import { resetUser2FAWithRecoveryCode } from "@lib/server/user";
 
 import type { APIContext } from "astro";
 
 export async function POST(context: APIContext): Promise<Response> {
-	const session = validatePasswordResetSessionRequest(context);
-	if (session === null || !session.emailVerified) {
+	if (context.locals.session === null || context.locals.user === null) {
 		return new Response(null, {
 			status: 401
 		});
 	}
-	if (session.twoFactorVerified) {
-		return new Response("Already verified", {
-			status: 400
+	if (!context.locals.user.registered2FA) {
+		return new Response(null, {
+			status: 401
 		});
 	}
 	const data: unknown = await context.request.json();
@@ -32,17 +30,20 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
-	if (!recoveryCodeBucket.check(session.userId, 1)) {
+	if (!recoveryCodeBucket.check(context.locals.user.id, 1)) {
 		return new Response("Too many requests", {
 			status: 429
 		});
 	}
-	const valid = verifyUserRecoveryCode(session.userId, code);
+	// TODO: Should all sessions be invalidated?
+	const valid = resetUser2FAWithRecoveryCode(context.locals.user.id, code);
 	if (!valid) {
-		return new Response("Invalid code", {
+		return new Response("Invalid recovery code", {
 			status: 400
 		});
 	}
-	recoveryCodeBucket.reset(session.userId);
-	return new Response();
+	recoveryCodeBucket.reset(context.locals.user.id);
+	return new Response(null, {
+		status: 201
+	});
 }

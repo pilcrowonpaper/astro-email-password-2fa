@@ -28,7 +28,7 @@ WHERE session.id = ?
 		email: row.string(5),
 		username: row.string(6),
 		emailVerified: Boolean(row.number(7)),
-		registeredTOTP: Boolean(row.number(8))
+		registered2FA: Boolean(row.number(8))
 	};
 	if (Date.now() >= session.expiresAt.getTime()) {
 		db.execute("DELETE FROM session WHERE id = ?", [sessionId]);
@@ -44,8 +44,16 @@ WHERE session.id = ?
 	return { session, user };
 }
 
-export async function invalidateSession(sessionId: string): Promise<void> {
+export function invalidateSession(sessionId: string): void {
 	db.execute("DELETE FROM session WHERE id = ?", [sessionId]);
+}
+
+export function invalidateUserSessions(userId: number): void {
+	db.execute("DELETE FROM session WHERE user_id = ?", [userId]);
+}
+
+export function invalidateUserSessionsExceptOne(userId: number, sessionId: string): void {
+	db.execute("DELETE FROM session WHERE user_id = ? AND id != ?", [userId, sessionId]);
 }
 
 export function validateRequest(context: APIContext): SessionValidationResult {
@@ -105,7 +113,7 @@ export function createSession(userId: number, flags: SessionFlags): Session {
 	return session;
 }
 
-export function verifySession2FA(sessionId: string): void {
+export function setSessionAs2FAVerified(sessionId: string): void {
 	db.execute("UPDATE session SET two_factor_verified = 1 WHERE id = ?", [sessionId]);
 }
 

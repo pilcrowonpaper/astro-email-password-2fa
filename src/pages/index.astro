@@ -5,11 +5,11 @@ if (Astro.locals.user === null || Astro.locals.session === null) {
 if (!Astro.locals.user.emailVerified) {
 	return Astro.redirect("/verify-email");
 }
-if (!Astro.locals.user.registeredTOTP) {
-	return Astro.redirect("/totp/setup");
+if (!Astro.locals.user.registered2FA) {
+	return Astro.redirect("/2fa/setup");
 }
 if (!Astro.locals.session.twoFactorVerified) {
-	return Astro.redirect("/totp");
+	return Astro.redirect("/2fa");
 }
 ---
 
@@ -19,7 +19,7 @@ if (!Astro.locals.session.twoFactorVerified) {
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Astro email/password demo with 2FA</title>
 	</head>
 	<body>
 		<header>
@@ -37,8 +37,8 @@ if (!Astro.locals.session.twoFactorVerified) {
 	const logoutButton = document.getElementById("button-logout")!;
 
 	logoutButton.addEventListener("click", async () => {
-		await fetch("/api/logout", {
-			method: "POST"
+		await fetch("/api/session", {
+			method: "DELETE"
 		});
 		window.location.href = "/login";
 	});

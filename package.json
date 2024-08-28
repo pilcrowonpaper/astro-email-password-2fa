@@ -1,5 +1,5 @@
 {
-	"name": "lucia-v4-astro-auth",
+	"name": "astro-email-password-2fa",
 	"type": "module",
 	"version": "0.0.1",
 	"scripts": {

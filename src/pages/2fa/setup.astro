@@ -1,16 +1,23 @@
 ---
+import { encodeBase64 } from "@oslojs/encoding";
+import { createTOTPKeyURI } from "@oslojs/otp";
+import { renderSVG } from "uqr";
+
 if (Astro.locals.user === null || Astro.locals.session === null) {
 	return Astro.redirect("/login");
 }
 if (!Astro.locals.user.emailVerified) {
 	return Astro.redirect("/verify-email");
 }
-if (!Astro.locals.user.registeredTOTP) {
-	return Astro.redirect("/totp/setup");
+if (Astro.locals.user.registered2FA && !Astro.locals.session.twoFactorVerified) {
+	return Astro.redirect("/2fa");
 }
-if (Astro.locals.session.twoFactorVerified) {
-	return Astro.redirect("/");
-}
+
+const totpKey = new Uint8Array(20);
+crypto.getRandomValues(totpKey);
+const encodedTOTPKey = encodeBase64(totpKey);
+const keyURI = createTOTPKeyURI("Demo", Astro.locals.user.username, totpKey, 30, 6);
+const qrcode = renderSVG(keyURI);
 ---
 
 <html lang="en">
@@ -19,18 +26,19 @@ if (Astro.locals.session.twoFactorVerified) {
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Two-factor authentication</title>
+		<title>Set up two-factor authentication</title>
 	</head>
 	<body>
 		<main>
-			<h1>Two-factor authentication</h1>
+			<h1>Set up two-factor authentication</h1>
+			<div style="width:200px; height: 200px;" set:html={qrcode} />
 			<form id="form-totp">
-				<label for="form-totp.code">Enter the code from your app</label>
-				<input id="form-totp.code" name="code" autocomplete="one-time-code" required /><br />
-				<button>Verify</button>
+				<input name="key" value={encodedTOTPKey} hidden required />
+				<label for="form-totp.code">Verify the code from the app</label>
+				<input id="form-totp.code" name="code" required /><br />
+				<button>Save</button>
 				<p id="form-totp.message"></p>
 			</form>
-			<a href="/recover-account">Use recovery code</a>
 		</main>
 	</body>
 </html>
@@ -43,14 +51,15 @@ if (Astro.locals.session.twoFactorVerified) {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
 		const data = {
+			key: formData.get("key"),
 			code: formData.get("code")
 		};
-		const response = await fetch("/api/totp/verify", {
-			method: "POST",
+		const response = await fetch("/api/user/totp", {
+			method: "PATCH",
 			body: JSON.stringify(data)
 		});
 		if (response.ok) {
-			window.location.href = "/";
+			window.location.href = "/recovery-code";
 		} else {
 			formErrorElement.innerText = await response.text();
 		}

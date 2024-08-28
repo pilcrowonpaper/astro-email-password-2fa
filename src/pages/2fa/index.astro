@@ -5,8 +5,8 @@ if (Astro.locals.user === null || Astro.locals.session === null) {
 if (!Astro.locals.user.emailVerified) {
 	return Astro.redirect("/verify-email");
 }
-if (!Astro.locals.user.registeredTOTP) {
-	return Astro.redirect("/totp/setup");
+if (!Astro.locals.user.registered2FA) {
+	return Astro.redirect("/2fa/setup");
 }
 if (Astro.locals.session.twoFactorVerified) {
 	return Astro.redirect("/");
@@ -19,24 +19,25 @@ if (Astro.locals.session.twoFactorVerified) {
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Recover your account</title>
+		<title>Two-factor authentication</title>
 	</head>
 	<body>
 		<main>
-			<h1>Recover your account</h1>
-			<form id="form-recover">
-				<label for="form-recover.code">Recovery code</label>
-				<input id="form-recover.code" name="code" required /><br />
+			<h1>Two-factor authentication</h1>
+			<form id="form-totp">
+				<label for="form-totp.code">Enter the code from your app</label>
+				<input id="form-totp.code" name="code" autocomplete="one-time-code" required /><br />
 				<button>Verify</button>
-				<p id="form-recover.message"></p>
+				<p id="form-totp.message"></p>
 			</form>
+			<a href="/2fa/reset">Use recovery code</a>
 		</main>
 	</body>
 </html>
 
 <script>
-	const formElement = document.getElementById("form-recover")!;
-	const formErrorElement = document.getElementById("form-recover.message")!;
+	const formElement = document.getElementById("form-totp")!;
+	const formErrorElement = document.getElementById("form-totp.message")!;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -44,12 +45,12 @@ if (Astro.locals.session.twoFactorVerified) {
 		const data = {
 			code: formData.get("code")
 		};
-		const response = await fetch("/api/recover-account", {
+		const response = await fetch("/api/user/totp/verify", {
 			method: "POST",
 			body: JSON.stringify(data)
 		});
 		if (response.ok) {
-			window.location.href = "/totp/setup";
+			window.location.href = "/";
 		} else {
 			formErrorElement.innerText = await response.text();
 		}

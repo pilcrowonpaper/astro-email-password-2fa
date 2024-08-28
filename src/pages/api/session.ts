@@ -1,12 +1,13 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { verifyPasswordHash } from "@lib/password";
-import { createSession, setSessionCookie } from "@lib/session";
-import { verifyEmailInput } from "@lib/email";
-import { Throttler } from "@lib/rate-limit";
-import { getUserFromEmail, getUserPasswordHash } from "@lib/user";
+import { verifyPasswordHash } from "@lib/server/password";
+import { createSession, setSessionCookie } from "@lib/server/session";
+import { verifyEmailInput } from "@lib/server/email";
+import { Throttler } from "@lib/server/rate-limit";
+import { getUserFromEmail, getUserPasswordHash } from "@lib/server/user";
+import { invalidateSession, deleteSessionCookie } from "@lib/server/session";
 
 import type { APIContext } from "astro";
-import type { SessionFlags } from "@lib/session";
+import type { SessionFlags } from "@lib/server/session";
 
 const throttler = new Throttler<number>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300]);
 
@@ -57,5 +58,16 @@ export async function POST(context: APIContext): Promise<Response> {
 	};
 	const session = createSession(user.id, sessionFlags);
 	setSessionCookie(context, session);
-	return new Response();
+	return new Response(null, { status: 201 });
+}
+
+export async function DELETE(context: APIContext): Promise<Response> {
+	if (context.locals.session === null) {
+		return new Response(null, {
+			status: 401
+		});
+	}
+	invalidateSession(context.locals.session.id);
+	deleteSessionCookie(context);
+	return new Response(null, { status: 201 });
 }

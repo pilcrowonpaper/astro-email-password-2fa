@@ -1,5 +1,5 @@
 ---
-import { getUserRecoverCode } from "@lib/user";
+import { getUserRecoverCode } from "@lib/server/user";
 
 if (Astro.locals.user === null || Astro.locals.session === null) {
 	return Astro.redirect("/login");
@@ -7,11 +7,11 @@ if (Astro.locals.user === null || Astro.locals.session === null) {
 if (!Astro.locals.user.emailVerified) {
 	return Astro.redirect("/verify-email");
 }
-if (!Astro.locals.user.registeredTOTP) {
-	return Astro.redirect("/totp/setup");
+if (!Astro.locals.user.registered2FA) {
+	return Astro.redirect("/2fa/setup");
 }
 if (!Astro.locals.session.twoFactorVerified) {
-	return Astro.redirect("/totp");
+	return Astro.redirect("/2fa");
 }
 
 const recoveryCode = getUserRecoverCode(Astro.locals.user.id);
@@ -23,7 +23,7 @@ const recoveryCode = getUserRecoverCode(Astro.locals.user.id);
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Recovery code</title>
 	</head>
 	<body>
 		<main>
