@@ -1,6 +1,6 @@
 import { generateRandomOTP } from "./utils";
 import { db } from "./db";
-import { ConstantRefillTokenBucket, FixedRefillTokenBucket } from "./rate-limit";
+import { FixedRefillTokenBucket } from "./rate-limit";
 import type { APIContext } from "astro";
 import { encodeBase32 } from "@oslojs/encoding";
 

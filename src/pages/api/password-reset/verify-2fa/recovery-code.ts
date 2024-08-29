@@ -1,5 +1,5 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { resetUser2FAWithRecoveryCode } from "@lib/server/user";
+import { resetUser2FAWithRecoveryCode } from "@lib/server/2fa";
 import { validatePasswordResetSessionRequest } from "@lib/server/password-reset";
 import { recoveryCodeBucket } from "@lib/server/2fa";
 
