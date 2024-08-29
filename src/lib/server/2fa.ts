@@ -1,7 +1,8 @@
 import { db } from "./db";
-import { FixedRefillTokenBucket } from "./rate-limit";
+import { ConstantRefillTokenBucket, FixedRefillTokenBucket } from "./rate-limit";
 import { generateRandomRecoveryCode } from "./utils";
 
+export const totpUpdateBucket = new ConstantRefillTokenBucket<number>(5, 60);
 export const totpBucket = new FixedRefillTokenBucket<number>(5, 60 * 30);
 export const recoveryCodeBucket = new FixedRefillTokenBucket<number>(5, 60 * 60);
 

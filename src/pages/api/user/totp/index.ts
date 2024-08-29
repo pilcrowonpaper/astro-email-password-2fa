@@ -3,7 +3,7 @@ import { verifyTOTP } from "@oslojs/otp";
 import { updateUserTOTPKey } from "@lib/server/user";
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { setSessionAs2FAVerified } from "@lib/server/session";
-import { totpBucket } from "@lib/server/2fa";
+import { totpUpdateBucket } from "@lib/server/2fa";
 
 import type { APIContext } from "astro";
 
@@ -23,7 +23,7 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 403
 		});
 	}
-	if (!totpBucket.check(context.locals.user.id, 2)) {
+	if (!totpUpdateBucket.check(context.locals.user.id, 1)) {
 		return new Response("Too many requests", {
 			status: 429
 		});
