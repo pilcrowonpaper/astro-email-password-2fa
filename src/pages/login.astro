@@ -40,8 +40,8 @@ if (Astro.locals.session !== null && Astro.locals.user !== null) {
 </html>
 
 <script>
-	const formElement = document.getElementById("form-login")!;
-	const formErrorElement = document.getElementById("form-login.message")!;
+	const formElement = document.getElementById("form-login") as HTMLFormElement;
+	const formErrorElement = document.getElementById("form-login.message") as HTMLElement;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();

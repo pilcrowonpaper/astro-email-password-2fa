@@ -41,8 +41,8 @@ if (Astro.locals.session !== null && Astro.locals.user !== null) {
 </html>
 
 <script>
-	const formElement = document.getElementById("form-signup")!;
-	const formErrorElement = document.getElementById("form-signup.message")!;
+	const formElement = document.getElementById("form-signup") as HTMLFormElement;
+	const formErrorElement = document.getElementById("form-signup.message") as HTMLElement;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();

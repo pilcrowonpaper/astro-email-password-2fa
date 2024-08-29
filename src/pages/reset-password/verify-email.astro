@@ -32,8 +32,8 @@ if (session.emailVerified) {
 </html>
 
 <script>
-	const formElement = document.getElementById("form-verify")!;
-	const formErrorElement = document.getElementById("form-verify.message")!;
+	const formElement = document.getElementById("form-verify") as HTMLFormElement;
+	const formErrorElement = document.getElementById("form-verify.message") as HTMLElement;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();

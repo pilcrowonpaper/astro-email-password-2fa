@@ -32,8 +32,8 @@ if (user.registered2FA && !session.twoFactorVerified) {
 </html>
 
 <script>
-	const formElement = document.getElementById("form-reset")!;
-	const formErrorElement = document.getElementById("form-reset.message")!;
+	const formElement = document.getElementById("form-reset") as HTMLFormElement;
+	const formErrorElement = document.getElementById("form-reset.message") as HTMLElement;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();

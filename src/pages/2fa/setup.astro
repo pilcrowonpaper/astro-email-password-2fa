@@ -44,8 +44,8 @@ const qrcode = renderSVG(keyURI);
 </html>
 
 <script>
-	const formElement = document.getElementById("form-totp")!;
-	const formErrorElement = document.getElementById("form-totp.message")!;
+	const formElement = document.getElementById("form-totp") as HTMLFormElement;
+	const formErrorElement = document.getElementById("form-totp.message") as HTMLElement;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();

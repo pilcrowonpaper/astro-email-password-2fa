@@ -34,9 +34,9 @@ if (!Astro.locals.session.twoFactorVerified) {
 </html>
 
 <script>
-	const logoutButton = document.getElementById("button-logout")!;
+	const logoutButtonElement = document.getElementById("button-logout") as HTMLButtonElement;
 
-	logoutButton.addEventListener("click", async () => {
+	logoutButtonElement.addEventListener("click", async () => {
 		await fetch("/api/session", {
 			method: "DELETE"
 		});

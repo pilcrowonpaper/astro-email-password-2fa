@@ -49,8 +49,8 @@ if (session.twoFactorVerified) {
 </html>
 
 <script>
-	const totpFormElement = document.getElementById("form-totp")!;
-	const totpFormErrorElement = document.getElementById("form-totp.message")!;
+	const totpFormElement = document.getElementById("form-totp") as HTMLFormElement;
+	const totpFormErrorElement = document.getElementById("form-totp.message") as HTMLElement;
 
 	totpFormElement.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -69,8 +69,8 @@ if (session.twoFactorVerified) {
 		}
 	});
 
-	const recoveryCodeFormElement = document.getElementById("form-recovery-code")!;
-	const recoveryCodeErrorElement = document.getElementById("form-recovery-code.message")!;
+	const recoveryCodeFormElement = document.getElementById("form-recovery-code") as HTMLFormElement;
+	const recoveryCodeErrorElement = document.getElementById("form-recovery-code.message") as HTMLElement;
 
 	recoveryCodeFormElement.addEventListener("submit", async (e) => {
 		e.preventDefault();

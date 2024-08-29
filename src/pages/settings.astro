@@ -78,8 +78,8 @@ if (Astro.locals.user.registered2FA) {
 </html>
 
 <script>
-	const emailFormElement = document.getElementById("form-email")!;
-	const emailFormError = document.getElementById("form-email.message")!;
+	const emailFormElement = document.getElementById("form-email") as HTMLFormElement;
+	const emailFormErrorElement = document.getElementById("form-email.message") as HTMLElement;
 
 	emailFormElement.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -94,12 +94,12 @@ if (Astro.locals.user.registered2FA) {
 		if (response.ok) {
 			window.location.href = "/verify-email";
 		} else {
-			emailFormError.innerText = await response.text();
+			emailFormErrorElement.innerText = await response.text();
 		}
 	});
 
-	const passwordFormElement = document.getElementById("form-password")!;
-	const passwordFormError = document.getElementById("form-password.message")!;
+	const passwordFormElement = document.getElementById("form-password") as HTMLFormElement;
+	const passwordFormErrorElement = document.getElementById("form-password.message") as HTMLElement;
 
 	passwordFormElement.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -113,15 +113,17 @@ if (Astro.locals.user.registered2FA) {
 			body: JSON.stringify(data)
 		});
 		if (response.ok) {
-			passwordFormError.innerText = "Your password was updated.";
+			passwordFormErrorElement.innerText = "Your password was updated.";
 		} else {
-			passwordFormError.innerText = await response.text();
+			passwordFormErrorElement.innerText = await response.text();
 		}
 	});
 
-	const generateRecoveryCodeButton = document.getElementById("button-generate-recovery-code")!;
-	const recoveryCodeElement = document.getElementById("recovery-code")!;
-	generateRecoveryCodeButton.addEventListener("click", async () => {
+	const generateRecoveryCodeButtonElement = document.getElementById(
+		"button-generate-recovery-code"
+	) as HTMLButtonElement;
+	const recoveryCodeElement = document.getElementById("recovery-code") as HTMLElement;
+	generateRecoveryCodeButtonElement.addEventListener("click", async () => {
 		const response = await fetch("/api/user/recovery-code/reset", {
 			method: "POST"
 		});

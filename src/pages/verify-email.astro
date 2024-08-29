@@ -46,10 +46,10 @@ if (verificationRequest === null || Date.now() >= verificationRequest.expiresAt.
 </html>
 
 <script>
-	const formElement = document.getElementById("form-verify")!;
-	const formErrorElement = document.getElementById("form-verify.message")!;
-	const resendButtonElement = document.getElementById("button-resend")!;
-	const resendMessageElement = document.getElementById("resend-message")!;
+	const formElement = document.getElementById("form-verify") as HTMLFormElement;
+	const formErrorElement = document.getElementById("form-verify.message") as HTMLElement;
+	const resendButtonElement = document.getElementById("button-resend") as HTMLElement;
+	const resendMessageElement = document.getElementById("resend-message") as HTMLElement;
 
 	formElement.addEventListener("submit", async (e) => {
 		e.preventDefault();
