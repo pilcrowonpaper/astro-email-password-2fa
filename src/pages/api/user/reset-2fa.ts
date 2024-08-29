@@ -47,6 +47,6 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	recoveryCodeBucket.reset(context.locals.user.id);
 	return new Response(null, {
-		status: 201
+		status: 204
 	});
 }

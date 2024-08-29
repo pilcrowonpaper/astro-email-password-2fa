@@ -44,5 +44,5 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	recoveryCodeBucket.reset(session.userId);
-	return new Response();
+	return new Response(null, { status: 204 });
 }

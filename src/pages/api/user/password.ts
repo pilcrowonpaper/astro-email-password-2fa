@@ -47,5 +47,5 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	}
 	invalidateUserSessionsExceptOne(context.locals.user.id, context.locals.session.id);
 	await updateUserPassword(context.locals.user.id, newPassword);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

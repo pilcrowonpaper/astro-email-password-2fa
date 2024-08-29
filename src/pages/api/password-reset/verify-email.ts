@@ -55,5 +55,5 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 400
 		});
 	}
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

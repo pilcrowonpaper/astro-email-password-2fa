@@ -28,5 +28,5 @@ export async function POST(context: APIContext): Promise<Response> {
 	verificationRequest = createEmailVerificationRequest(verificationRequest.userId, verificationRequest.email);
 	sendVerificationEmail(verificationRequest.email, verificationRequest.code);
 	setEmailVerificationRequestCookie(context, verificationRequest);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

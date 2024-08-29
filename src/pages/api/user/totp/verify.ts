@@ -55,5 +55,5 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	totpBucket.reset(context.locals.user.id);
 	setSessionAs2FAVerified(context.locals.session.id);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

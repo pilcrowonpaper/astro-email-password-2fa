@@ -69,5 +69,5 @@ export async function DELETE(context: APIContext): Promise<Response> {
 	}
 	invalidateSession(context.locals.session.id);
 	deleteSessionCookie(context);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

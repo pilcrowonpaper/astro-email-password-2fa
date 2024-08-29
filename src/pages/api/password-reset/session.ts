@@ -44,5 +44,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	const session = createPasswordResetSession(user.id, user.email);
 	sendPasswordResetEmail(session.email, session.code);
 	setPasswordResetSessionCookie(context, session);
-	return new Response();
+	return new Response(null, {
+		status: 201
+	});
 }

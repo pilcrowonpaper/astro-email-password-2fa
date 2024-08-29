@@ -71,5 +71,5 @@ export async function POST(context: APIContext): Promise<Response> {
 	};
 	const session = createSession(user.id, sessionFlags);
 	setSessionCookie(context, session);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

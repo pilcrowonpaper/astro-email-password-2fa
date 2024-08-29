@@ -63,5 +63,5 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	// TODO: Should a new recovery code be generated?
 	updateUserTOTPKey(context.locals.session.userId, key);
 	setSessionAs2FAVerified(context.locals.session.id);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }

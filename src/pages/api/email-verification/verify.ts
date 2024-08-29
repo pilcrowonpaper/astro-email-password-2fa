@@ -62,5 +62,5 @@ export async function POST(context: APIContext): Promise<Response> {
 	invalidateUserPasswordResetSessions(context.locals.user.id);
 	updateUserEmailAndSetEmailAsVerified(context.locals.user.id, verificationRequest.email);
 	deleteEmailVerificationRequestCookie(context);
-	return new Response(null, { status: 201 });
+	return new Response(null, { status: 204 });
 }
