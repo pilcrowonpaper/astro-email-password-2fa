@@ -7,7 +7,7 @@ import { totpBucket } from "@lib/server/2fa";
 
 import type { APIContext } from "astro";
 
-export async function PATCH(context: APIContext): Promise<Response> {
+export async function POST(context: APIContext): Promise<Response> {
 	if (context.locals.session === null || context.locals.user === null) {
 		return new Response(null, {
 			status: 401
