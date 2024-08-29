@@ -13,12 +13,12 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	}
 	if (!context.locals.user.emailVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	if (context.locals.user.registered2FA && !context.locals.session.twoFactorVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	const data = await context.request.json();
@@ -42,7 +42,7 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	const validPassword = await verifyPasswordHash(passwordHash, password);
 	if (!validPassword) {
 		return new Response("Incorrect password", {
-			status: 401
+			status: 400
 		});
 	}
 	invalidateUserSessionsExceptOne(context.locals.user.id, context.locals.session.id);

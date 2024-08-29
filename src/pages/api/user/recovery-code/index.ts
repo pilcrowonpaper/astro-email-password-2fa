@@ -10,12 +10,12 @@ export async function GET(context: APIContext): Promise<Response> {
 	}
 	if (!context.locals.user.emailVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	if (!context.locals.session.twoFactorVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	const code = getUserRecoverCode(context.locals.session.userId);

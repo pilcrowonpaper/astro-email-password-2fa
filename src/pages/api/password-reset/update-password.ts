@@ -20,7 +20,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (user.registered2FA && !passwordResetSession.twoFactorVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	const data = await context.request.json();

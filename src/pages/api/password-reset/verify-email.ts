@@ -34,7 +34,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (code === "") {
 		return new Response("Please enter your code", {
-			status: 401
+			status: 400
 		});
 	}
 	if (!bucket.check(session.userId, 1)) {
@@ -44,7 +44,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (code !== session.code) {
 		return new Response("Incorrect code", {
-			status: 401
+			status: 400
 		});
 	}
 	bucket.reset(session.userId);

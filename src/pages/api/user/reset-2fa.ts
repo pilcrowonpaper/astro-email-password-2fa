@@ -11,12 +11,12 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (!context.locals.user.emailVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	if (!context.locals.user.registered2FA) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	const data: unknown = await context.request.json();
@@ -31,7 +31,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (code === "") {
 		return new Response("Please enter your code", {
-			status: 401
+			status: 400
 		});
 	}
 	if (!recoveryCodeBucket.check(context.locals.user.id, 1)) {

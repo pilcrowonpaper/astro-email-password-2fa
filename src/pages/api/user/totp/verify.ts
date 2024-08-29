@@ -14,12 +14,12 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (!context.locals.user.emailVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	if (!context.locals.user.registered2FA) {
-		return new Response("Please set up two-factor authentication.", {
-			status: 400
+		return new Response(null, {
+			status: 403
 		});
 	}
 	if (!totpBucket.check(context.locals.user.id, 1)) {

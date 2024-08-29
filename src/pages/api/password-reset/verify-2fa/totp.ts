@@ -30,7 +30,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 	if (code === "") {
 		return new Response("Please enter your code", {
-			status: 401
+			status: 400
 		});
 	}
 	const totpKey = getUserTOTPKey(session.userId);

@@ -15,12 +15,12 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	}
 	if (!context.locals.user.emailVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	if (context.locals.user.registered2FA && !context.locals.session.twoFactorVerified) {
 		return new Response(null, {
-			status: 401
+			status: 403
 		});
 	}
 	if (!totpBucket.check(context.locals.user.id, 2)) {
@@ -41,7 +41,7 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	}
 	if (code === "") {
 		return new Response("Please enter your code", {
-			status: 401
+			status: 400
 		});
 	}
 	if (encodedKey.length !== 28) {
