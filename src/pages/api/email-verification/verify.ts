@@ -15,11 +15,17 @@ import type { APIContext } from "astro";
 const bucket = new FixedRefillTokenBucket<number>(5, 60 * 30);
 
 export async function POST(context: APIContext): Promise<Response> {
-	if (context.locals.user === null) {
+	if (context.locals.session === null || context.locals.user === null) {
 		return new Response(null, {
 			status: 401
 		});
 	}
+	if (context.locals.user.registered2FA && !context.locals.session.twoFactorVerified) {
+		return new Response(null, {
+			status: 401
+		});
+	}
+
 	let verificationRequest = getUserEmailVerificationRequestFromRequest(context);
 	if (verificationRequest === null) {
 		return new Response(null, {
