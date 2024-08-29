@@ -9,6 +9,11 @@ export async function POST(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
+	if (!context.locals.user.emailVerified) {
+		return new Response(null, {
+			status: 401
+		});
+	}
 	if (!context.locals.user.registered2FA) {
 		return new Response(null, {
 			status: 401

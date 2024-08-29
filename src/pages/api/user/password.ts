@@ -11,6 +11,11 @@ export async function PATCH(context: APIContext): Promise<Response> {
 			status: 401
 		});
 	}
+	if (!context.locals.user.emailVerified) {
+		return new Response(null, {
+			status: 401
+		});
+	}
 	if (context.locals.user.registered2FA && !context.locals.session.twoFactorVerified) {
 		return new Response(null, {
 			status: 401
