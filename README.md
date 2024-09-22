@@ -19,6 +19,12 @@ Create `sqlite.db` and run `setup.sql`.
 sqlite3 sqlite.db
 ```
 
+Create a .env file. Generate a 128 bit (16 byte) string and set the base64 encoding as `ENCRYPTION_KEY`. 
+
+```bash
+ENCRYPTION_KEY="L9pmqRJnO1ZJSQ2svbHuBA=="
+```
+
 Run the application:
 
 ```

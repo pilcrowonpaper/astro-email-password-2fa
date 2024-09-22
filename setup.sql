@@ -5,7 +5,7 @@ CREATE TABLE user (
     password_hash TEXT NOT NULL,
     email_verified INTEGER NOT NULL DEFAULT 0,
     totp_key BLOB,
-    recovery_code TEXT NOT NULL
+    recovery_code BLOB NOT NULL
 );
 
 CREATE TABLE session (

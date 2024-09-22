@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { decrypt, encrypt } from "./encryption";
 import { hashPassword } from "./password";
 import { generateRandomRecoveryCode } from "./utils";
 
@@ -9,9 +10,10 @@ export function verifyUsernameInput(username: string): boolean {
 export async function createUser(email: string, username: string, password: string): Promise<User> {
 	const passwordHash = await hashPassword(password);
 	const recoveryCode = generateRandomRecoveryCode();
+	const encryptedRecoveryCode = encrypt(new TextEncoder().encode(recoveryCode));
 	const row = db.queryOne(
 		"INSERT INTO user (email, username, password_hash, recovery_code) VALUES (?, ?, ?, ?) RETURNING user.id",
-		[email, username, passwordHash, recoveryCode]
+		[email, username, passwordHash, encryptedRecoveryCode]
 	);
 	if (row === null) {
 		throw new Error("Unexpected error");
@@ -53,7 +55,7 @@ export function getUserRecoverCode(userId: number): string {
 	if (row === null) {
 		throw new Error("Invalid user ID");
 	}
-	return row.string(0);
+	return new TextDecoder().decode(decrypt(row.bytes(0)));
 }
 
 export function getUserTOTPKey(userId: number): Uint8Array | null {
@@ -61,16 +63,21 @@ export function getUserTOTPKey(userId: number): Uint8Array | null {
 	if (row === null) {
 		throw new Error("Invalid user ID");
 	}
-	return row.bytesNullable(0);
+	const encrypted = row.bytesNullable(0);
+	if (encrypted === null) {
+		return null;
+	}
+	return decrypt(encrypted);
 }
 
 export function updateUserTOTPKey(userId: number, key: Uint8Array): void {
-	db.execute("UPDATE user SET totp_key = ? WHERE id = ?", [key, userId]);
+	db.execute("UPDATE user SET totp_key = ? WHERE id = ?", [encrypt(key), userId]);
 }
 
 export function resetUserRecoveryCode(userId: number): string {
 	const recoveryCode = generateRandomRecoveryCode();
-	db.execute("UPDATE user SET recovery_code = ? WHERE id = ?", [recoveryCode, userId]);
+	const encrypted = encrypt(new TextEncoder().encode(recoveryCode));
+	db.execute("UPDATE user SET recovery_code = ? WHERE id = ?", [encrypted, userId]);
 	return recoveryCode;
 }
 
