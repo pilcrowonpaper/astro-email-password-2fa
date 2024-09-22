@@ -1,8 +1,9 @@
 import { generateRandomOTP } from "./utils";
 import { db } from "./db";
 import { FixedRefillTokenBucket } from "./rate-limit";
-import type { APIContext } from "astro";
 import { encodeBase32 } from "@oslojs/encoding";
+
+import type { APIContext } from "astro";
 
 export function getEmailVerificationRequest(id: string): EmailVerificationRequest | null {
 	const row = db.queryOne("SELECT id, user_id, code, email, expires_at FROM email_verification_request WHERE id = ?", [
