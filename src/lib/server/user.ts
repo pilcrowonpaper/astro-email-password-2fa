@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { decrypt, encrypt } from "./encryption";
+import { decrypt, decryptToString, encrypt, encryptString } from "./encryption";
 import { hashPassword } from "./password";
 import { generateRandomRecoveryCode } from "./utils";
 
@@ -10,7 +10,7 @@ export function verifyUsernameInput(username: string): boolean {
 export async function createUser(email: string, username: string, password: string): Promise<User> {
 	const passwordHash = await hashPassword(password);
 	const recoveryCode = generateRandomRecoveryCode();
-	const encryptedRecoveryCode = encrypt(new TextEncoder().encode(recoveryCode));
+	const encryptedRecoveryCode = encryptString(recoveryCode);
 	const row = db.queryOne(
 		"INSERT INTO user (email, username, password_hash, recovery_code) VALUES (?, ?, ?, ?) RETURNING user.id",
 		[email, username, passwordHash, encryptedRecoveryCode]
@@ -55,7 +55,7 @@ export function getUserRecoverCode(userId: number): string {
 	if (row === null) {
 		throw new Error("Invalid user ID");
 	}
-	return new TextDecoder().decode(decrypt(row.bytes(0)));
+	return decryptToString(row.bytes(0));
 }
 
 export function getUserTOTPKey(userId: number): Uint8Array | null {
@@ -76,7 +76,7 @@ export function updateUserTOTPKey(userId: number, key: Uint8Array): void {
 
 export function resetUserRecoveryCode(userId: number): string {
 	const recoveryCode = generateRandomRecoveryCode();
-	const encrypted = encrypt(new TextEncoder().encode(recoveryCode));
+	const encrypted = encryptString(recoveryCode);
 	db.execute("UPDATE user SET recovery_code = ? WHERE id = ?", [encrypted, userId]);
 	return recoveryCode;
 }
