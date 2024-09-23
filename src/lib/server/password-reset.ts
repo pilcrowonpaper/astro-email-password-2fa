@@ -1,17 +1,15 @@
 import { db } from "./db";
-import { encodeBase32 } from "@oslojs/encoding";
+import { encodeHexLowerCase } from "@oslojs/encoding";
 import { generateRandomOTP } from "./utils";
+import { sha256 } from "@oslojs/crypto/sha2";
 
 import type { APIContext } from "astro";
 import type { User } from "./user";
 
-export function createPasswordResetSession(userId: number, email: string): PasswordResetSession {
-	const idBytes = new Uint8Array(20);
-	crypto.getRandomValues(idBytes);
-	const id = encodeBase32(idBytes).toLowerCase();
-
+export function createPasswordResetSession(token: string, userId: number, email: string): PasswordResetSession {
+	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const session: PasswordResetSession = {
-		id,
+		id: sessionId,
 		userId,
 		email,
 		expiresAt: new Date(Date.now() + 1000 * 60 * 10),
@@ -29,7 +27,8 @@ export function createPasswordResetSession(userId: number, email: string): Passw
 	return session;
 }
 
-export function validatePasswordResetSession(sessionId: string): PasswordResetSessionValidationResult {
+export function validatePasswordResetSessionToken(token: string): PasswordResetSessionValidationResult {
+	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const row = db.queryOne(
 		`SELECT password_reset_session.id, password_reset_session.user_id, password_reset_session.email, password_reset_session.code, password_reset_session.expires_at, password_reset_session.email_verified, password_reset_session.two_factor_verified,
 user.id, user.email, user.username, user.email_verified
@@ -38,7 +37,7 @@ WHERE password_reset_session.id = ?`,
 		[sessionId]
 	);
 	if (row === null) {
-		return { session: null, user: null };
+		return { token: null, session: null, user: null };
 	}
 	const session: PasswordResetSession = {
 		id: row.string(0),
@@ -58,9 +57,9 @@ WHERE password_reset_session.id = ?`,
 	};
 	if (Date.now() >= session.expiresAt.getTime()) {
 		db.execute("DELETE FROM password_reset_session WHERE id = ?", [session.id]);
-		return { session: null, user: null };
+		return { token: null, session: null, user: null };
 	}
-	return { session, user };
+	return { token, session, user };
 }
 
 export function setPasswordResetSessionAsEmailVerified(sessionId: string): void {
@@ -76,20 +75,20 @@ export function invalidateUserPasswordResetSessions(userId: number): void {
 }
 
 export function validatePasswordResetSessionRequest(context: APIContext): PasswordResetSessionValidationResult {
-	const sessionId = context.cookies.get("password_reset_session")?.value ?? null;
-	if (sessionId === null) {
-		return { session: null, user: null };
+	const token = context.cookies.get("password_reset_session")?.value ?? null;
+	if (token === null) {
+		return { token: null, session: null, user: null };
 	}
-	const result = validatePasswordResetSession(sessionId);
+	const result = validatePasswordResetSessionToken(token);
 	if (result.session === null) {
-		deletePasswordResetSessionCookie(context);
+		deletePasswordResetSessionTokenCookie(context);
 	}
 	return result;
 }
 
-export function setPasswordResetSessionCookie(context: APIContext, session: PasswordResetSession): void {
-	context.cookies.set("password_reset_session", session.id, {
-		expires: session.expiresAt,
+export function setPasswordResetSessionTokenCookie(context: APIContext, token: string, expiresAt: Date): void {
+	context.cookies.set("password_reset_session", token, {
+		expires: expiresAt,
 		sameSite: "lax",
 		httpOnly: true,
 		path: "/",
@@ -97,7 +96,7 @@ export function setPasswordResetSessionCookie(context: APIContext, session: Pass
 	});
 }
 
-export function deletePasswordResetSessionCookie(context: APIContext): void {
+export function deletePasswordResetSessionTokenCookie(context: APIContext): void {
 	context.cookies.set("password_reset_session", "", {
 		maxAge: 0,
 		sameSite: "lax",
@@ -122,5 +121,5 @@ export interface PasswordResetSession {
 }
 
 export type PasswordResetSessionValidationResult =
-	| { session: PasswordResetSession; user: User }
-	| { session: null; user: null };
+	| { token: string; session: PasswordResetSession; user: User }
+	| { token: null; session: null; user: null };

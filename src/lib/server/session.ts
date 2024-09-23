@@ -1,10 +1,12 @@
 import { db } from "./db";
-import { encodeBase32 } from "@oslojs/encoding";
+import { encodeBase32, encodeHexLowerCase } from "@oslojs/encoding";
+import { sha256 } from "@oslojs/crypto/sha2";
 
 import type { User } from "./user";
 import type { APIContext } from "astro";
 
-export function validateSession(sessionId: string): SessionValidationResult {
+export function validateSessionToken(token: string): SessionValidationResult {
+	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const row = db.queryOne(
 		`
 SELECT session.id, session.user_id, session.expires_at, session.two_factor_verified, user.id, user.email, user.username, user.email_verified, IIF(user.totp_key IS NOT NULL, 1, 0) FROM session
@@ -15,7 +17,7 @@ WHERE session.id = ?
 	);
 
 	if (row === null) {
-		return { session: null, user: null };
+		return { token: null, session: null, user: null };
 	}
 	const session: Session = {
 		id: row.string(0),
@@ -31,17 +33,17 @@ WHERE session.id = ?
 		registered2FA: Boolean(row.number(8))
 	};
 	if (Date.now() >= session.expiresAt.getTime()) {
-		db.execute("DELETE FROM session WHERE id = ?", [sessionId]);
-		return { session: null, user: null };
+		db.execute("DELETE FROM session WHERE id = ?", [session.id]);
+		return { token: null, session: null, user: null };
 	}
 	if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 15) {
 		session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
 		db.execute("UPDATE session SET expires_at = ? WHERE session.id = ?", [
 			Math.floor(session.expiresAt.getTime() / 1000),
-			sessionId
+			session.id
 		]);
 	}
-	return { session, user };
+	return { token, session, user };
 }
 
 export function invalidateSession(sessionId: string): void {
@@ -57,33 +59,34 @@ export function invalidateUserSessionsExceptOne(userId: number, sessionId: strin
 }
 
 export function validateRequest(context: APIContext): SessionValidationResult {
-	const sessionId = context.cookies.get("session")?.value ?? null;
-	if (sessionId === null) {
+	const token = context.cookies.get("session")?.value ?? null;
+	if (token === null) {
 		return {
+			token: null,
 			session: null,
 			user: null
 		};
 	}
-	const result = validateSession(sessionId);
+	const result = validateSessionToken(token);
 	if (result.session !== null) {
-		setSessionCookie(context, result.session);
+		setSessionTokenCookie(context, token, result.session.expiresAt);
 	} else {
-		deleteSessionCookie(context);
+		deleteSessionTokenCookie(context);
 	}
 	return result;
 }
 
-export function setSessionCookie(context: APIContext, session: Session): void {
-	context.cookies.set("session", session.id, {
+export function setSessionTokenCookie(context: APIContext, token: string, expiresAt: Date): void {
+	context.cookies.set("session", token, {
 		httpOnly: true,
 		path: "/",
 		secure: import.meta.env.PROD,
 		sameSite: "lax",
-		expires: session.expiresAt
+		expires: expiresAt
 	});
 }
 
-export function deleteSessionCookie(context: APIContext): void {
+export function deleteSessionTokenCookie(context: APIContext): void {
 	context.cookies.set("session", "", {
 		httpOnly: true,
 		path: "/",
@@ -93,13 +96,17 @@ export function deleteSessionCookie(context: APIContext): void {
 	});
 }
 
-export function createSession(userId: number, flags: SessionFlags): Session {
-	const idBytes = new Uint8Array(20);
-	crypto.getRandomValues(idBytes);
-	const id = encodeBase32(idBytes).toLowerCase();
+export function generateSessionToken(): string {
+	const tokenBytes = new Uint8Array(20);
+	crypto.getRandomValues(tokenBytes);
+	const token = encodeBase32(tokenBytes).toLowerCase();
+	return token;
+}
 
+export function createSession(token: string, userId: number, flags: SessionFlags): Session {
+	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const session: Session = {
-		id,
+		id: sessionId,
 		userId,
 		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
 		twoFactorVerified: flags.twoFactorVerified
@@ -127,4 +134,6 @@ export interface Session extends SessionFlags {
 	userId: number;
 }
 
-type SessionValidationResult = { session: Session; user: User } | { session: null; user: null };
+type SessionValidationResult =
+	| { token: string; session: Session; user: User }
+	| { token: null; session: null; user: null };

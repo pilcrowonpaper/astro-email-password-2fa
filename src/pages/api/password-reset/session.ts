@@ -5,9 +5,10 @@ import {
 	createPasswordResetSession,
 	invalidateUserPasswordResetSessions,
 	sendPasswordResetEmail,
-	setPasswordResetSessionCookie
+	setPasswordResetSessionTokenCookie
 } from "@lib/server/password-reset";
 import { ConstantRefillTokenBucket } from "@lib/server/rate-limit";
+import { generateSessionToken } from "@lib/server/session";
 
 import type { APIContext } from "astro";
 
@@ -41,9 +42,10 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	invalidateUserPasswordResetSessions(user.id);
-	const session = createPasswordResetSession(user.id, user.email);
+	const token = generateSessionToken();
+	const session = createPasswordResetSession(token, user.id, user.email);
 	sendPasswordResetEmail(session.email, session.code);
-	setPasswordResetSessionCookie(context, session);
+	setPasswordResetSessionTokenCookie(context, token, session.expiresAt);
 	return new Response(null, {
 		status: 201
 	});

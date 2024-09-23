@@ -1,10 +1,10 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
 import { verifyPasswordHash } from "@lib/server/password";
-import { createSession, setSessionCookie } from "@lib/server/session";
+import { createSession, generateSessionToken, setSessionTokenCookie } from "@lib/server/session";
 import { verifyEmailInput } from "@lib/server/email";
 import { Throttler } from "@lib/server/rate-limit";
 import { getUserFromEmail, getUserPasswordHash } from "@lib/server/user";
-import { invalidateSession, deleteSessionCookie } from "@lib/server/session";
+import { invalidateSession, deleteSessionTokenCookie } from "@lib/server/session";
 
 import type { APIContext } from "astro";
 import type { SessionFlags } from "@lib/server/session";
@@ -56,8 +56,9 @@ export async function POST(context: APIContext): Promise<Response> {
 	const sessionFlags: SessionFlags = {
 		twoFactorVerified: false
 	};
-	const session = createSession(user.id, sessionFlags);
-	setSessionCookie(context, session);
+	const token = generateSessionToken();
+	const session = createSession(token, user.id, sessionFlags);
+	setSessionTokenCookie(context, token, session.expiresAt);
 	return new Response(null, { status: 201 });
 }
 
@@ -68,6 +69,6 @@ export async function DELETE(context: APIContext): Promise<Response> {
 		});
 	}
 	invalidateSession(context.locals.session.id);
-	deleteSessionCookie(context);
+	deleteSessionTokenCookie(context);
 	return new Response(null, { status: 204 });
 }
