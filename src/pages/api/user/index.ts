@@ -69,8 +69,8 @@ export async function POST(context: APIContext): Promise<Response> {
 	const sessionFlags: SessionFlags = {
 		twoFactorVerified: false
 	};
-	const token = generateSessionToken();
-	const session = createSession(token, user.id, sessionFlags);
-	setSessionTokenCookie(context, token, session.expiresAt);
+	const sessionToken = generateSessionToken();
+	const session = createSession(sessionToken, user.id, sessionFlags);
+	setSessionTokenCookie(context, sessionToken, session.expiresAt);
 	return new Response(null, { status: 204 });
 }

@@ -42,10 +42,10 @@ export async function POST(context: APIContext): Promise<Response> {
 		});
 	}
 	invalidateUserPasswordResetSessions(user.id);
-	const token = generateSessionToken();
-	const session = createPasswordResetSession(token, user.id, user.email);
+	const sessionToken = generateSessionToken();
+	const session = createPasswordResetSession(sessionToken, user.id, user.email);
 	sendPasswordResetEmail(session.email, session.code);
-	setPasswordResetSessionTokenCookie(context, token, session.expiresAt);
+	setPasswordResetSessionTokenCookie(context, sessionToken, session.expiresAt);
 	return new Response(null, {
 		status: 201
 	});

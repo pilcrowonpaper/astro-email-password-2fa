@@ -58,24 +58,6 @@ export function invalidateUserSessionsExceptOne(userId: number, sessionId: strin
 	db.execute("DELETE FROM session WHERE user_id = ? AND id != ?", [userId, sessionId]);
 }
 
-export function validateRequest(context: APIContext): SessionValidationResult {
-	const token = context.cookies.get("session")?.value ?? null;
-	if (token === null) {
-		return {
-			token: null,
-			session: null,
-			user: null
-		};
-	}
-	const result = validateSessionToken(token);
-	if (result.session !== null) {
-		setSessionTokenCookie(context, token, result.session.expiresAt);
-	} else {
-		deleteSessionTokenCookie(context);
-	}
-	return result;
-}
-
 export function setSessionTokenCookie(context: APIContext, token: string, expiresAt: Date): void {
 	context.cookies.set("session", token, {
 		httpOnly: true,
