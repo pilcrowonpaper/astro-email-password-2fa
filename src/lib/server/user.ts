@@ -71,7 +71,8 @@ export function getUserTOTPKey(userId: number): Uint8Array | null {
 }
 
 export function updateUserTOTPKey(userId: number, key: Uint8Array): void {
-	db.execute("UPDATE user SET totp_key = ? WHERE id = ?", [encrypt(key), userId]);
+	const encrypted = encrypt(key);
+	db.execute("UPDATE user SET totp_key = ? WHERE id = ?", [encrypted, userId]);
 }
 
 export function resetUserRecoveryCode(userId: number): string {
