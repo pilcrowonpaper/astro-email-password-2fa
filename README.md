@@ -25,6 +25,11 @@ Create a .env file. Generate a 128 bit (16 byte) string, base64 encode it, and s
 ENCRYPTION_KEY="L9pmqRJnO1ZJSQ2svbHuBA=="
 ```
 
+> You can use OpenSSL to quickly generate a secure key.
+> ```bash
+> openssl rand --base64 16
+> ```
+
 Run the application:
 
 ```
